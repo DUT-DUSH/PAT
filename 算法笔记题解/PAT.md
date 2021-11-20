@@ -67,8 +67,8 @@ using namespace std;
 const int maxn = 1010;
 
 //queue仅仅储存老鼠的位置，通过mou[queue]的方式确定老鼠
-//每轮都pop出去并且赋值相同的rank=group+1
-//质量最大的push回去，在下一轮中通过push修改rank
+//每轮都pop出去并且赋值相同的rank=group+1 
+//质量最大的push回去，在下一轮中通过push修改rank， 这个很重要
 //队列的作用是保存他的序列并且每一次循环通过pop push重置新的group
 
 struct mouse
@@ -103,7 +103,7 @@ int main()
             int k = q.front(); //k存放质量最大的老鼠的编号
             for (int j = 0; j < ng; j++)
             {
-                //最后一组老鼠不足ng时退出循环
+                //最后一组老鼠不足ng时，到达最后一个就退出循环
                 if (i * ng + j >= temp)
                     break;
                 int front = q.front();
@@ -131,4 +131,276 @@ int main()
 
 
 ### 链表应用
+#### 1_
+
+![image-20211115102138835](https://i.loli.net/2021/11/15/ZA3Gxu6hLocjDSX.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+//这是静态链表，因为地址都是int，所以开数组
+//静态链表的操作其实就是对数组的操作，只不过数组的下表是离散的
+//所以需要一个order以及cmp使之按照链接的方式有序
+//这里的next实际上是没有做改变的，因为这是数组，并且只需要输出就行
+const int maxn = 100010;
+struct Node
+{
+    int address, data, next;
+    int order; //  节点在链表中的序号，为了实现反转
+} node[maxn];
+
+bool cmp(Node a, Node b)
+{
+    return a.order < b.order; //按order从小到大排序
+}
+
+int main()
+{
+    for (int i = 0; i < maxn; i++)
+        node[i].order = maxn;
+    int begin, n, k, address;
+    cin >> begin >> n >> k;
+    for (int i = 0; i < n; i++)
+    {
+        cin >> address >> node[address].data >> node[address].next;
+        node[address].address = address;
+    }
+
+    int p = begin, cnt = 0;
+    while (p != -1) //从首地址开始给node数组赋order
+    {
+        node[p].order = cnt++;
+        p = node[p].next;
+    }
+
+    sort(node, node + maxn, cmp); //这个时候看似是链表实则是个数组//排序排的是下标，下标本来表示address，只是为了连成链，之后就没用了，order储存顺序	
+
+    //链表形成之后，对输出的处理
+    for (int i = 0; i < cnt / k; i++) //对于每一块输出，一共有cnt/k个完整的块
+    {
+        for (int j = (i + 1) * k - 1; j > i * k; j--)                                     //这是每一块
+            printf("%05d %d %05d\n", node[j].address, node[j].data, node[j - 1].address); //第i块倒序输出
+
+        //下面是对每一块最后一个结点next的处理
+        printf("%05d %d ", node[i * k].address, node[i * k].data);
+        if (i < cnt / k - 1) //  如果不是最后一块，就指向下一块的最后一个节点
+            printf("%05d\n", node[(i + 2) * k - 1].address);
+        else //如果是最后一块
+        {
+            if (cnt % k == 0) //如果后面没有多余不完整的块
+                printf("-1\n");
+            else //如果还有不完整即不反转的块
+            {
+                printf("%05d\n", node[(i + 1) * k].address); //指向最后一个不完整块的第一个节点
+
+                for (int j = cnt / k * k; j < cnt; j++) //剩下不完整的块原序输出
+                {
+                    
+                    printf("%05d %d ", node[j].address, node[j].data);
+                    if(j<cnt-1)
+                        printf("%05d\n",node[j].next);
+                    else
+                        printf("-1\n");
+
+                }
+            }
+        }
+    }
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211115111912500](https://i.loli.net/2021/11/15/8kntphMqurwBeSa.png)
+
+![image-20211115111935599](https://i.loli.net/2021/11/15/LtmleFdHNCD7prA.png)
+
+
+
+~~~C++
+#include <iostream>
+using namespace std;
+const int maxn = 100010;
+
+//实际上就是让你求第一个共用节点
+//第一个链表节点flag全设为1
+//遍历第二个，如果有flag==1就输出
+//只需要一个数组，因为题中给的就是一个数组
+//两个链表各自是这个数组中的一部分
+//所以对数组的第一部分flag==true，再遍历第二部分就能出结果
+struct Node
+{
+    char data;
+    int next;
+    bool flag;
+} node[maxn];   
+
+
+int main()
+{
+    for (int i = 0; i < maxn; i++)
+        node[i].flag = false;
+    int s1 ,s2 ,n;
+    cin>>s1>>s2>>n;
+    for(int i=0;i<n;i++)
+    {
+        int address;
+        cin>>address;
+        cin>>node[address].data;
+        cin>>node[address].next; 
+    }
+    for(int p=s1;p!=-1;p=node[p].next)  //遍历第一部分并flag==true
+        node[p].flag=true;
+    for(int p=s2;p!=-1;p=node[p].next)
+        if(node[p].flag==true)
+        {
+            printf("%05d",p);
+            return 0;
+        }
+
+    cout<<"-1"<<endl;
+    return 0;
+}
+~~~
+
+
+
+#### 3_
+
+![image-20211115180632909](https://i.loli.net/2021/11/15/6kDVaX51WqdUuGN.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+const int maxn=100010;
+struct Node
+{
+    int data, next, address;
+    int flag;       //这里既然只是判断节点是否失效，用flag判断就行了，order可以判断有序
+} node[maxn];
+
+
+bool cmp(Node a, Node b)
+{
+    if (a.flag != b.flag)   //是否有效的判断
+        return a.flag > b.flag;
+    else    
+        return a.data < b.data;
+}
+int main()
+{
+    for (int i = 0; i < maxn; ++i)
+    {
+        node[i].data = maxn;
+        node[i].flag = false;
+    }
+    int n, address, begin;
+    cin >> n >> begin;
+    for (int i = 0; i < n; ++i) //这里赋值数组下标就是address，单纯的用数组来做会导致无法判断失效节点
+    {
+        cin >> address; 
+        cin >> node[address].data >> node[address].next;
+        node[address].address = address;
+    }
+    int p = begin, Count = 0;
+    while (p != -1) //查找有效节点的方式
+    {
+        Count++;
+        node[p].flag = true;
+        p = node[p].next;
+    }
+    sort(node, node + maxn, cmp);
+    if (Count == 0)
+    {
+        cout << "0 -1" << endl;
+        return 0;
+    }
+    printf("%d %05d\n", Count, node[0].address);
+    for (int i = 0; i < Count; ++i)
+    {
+        if (i != Count - 1)
+            printf("%05d %d %05d\n", node[i].address, node[i].data, node[i + 1].address);
+        else
+            printf("%05d %d -1\n", node[i].address, node[i].data);
+    }
+}
+~~~
+
+#### 4_
+
+![image-20211120143218984](https://i.loli.net/2021/11/20/k37CnXmF1Oc4HDV.png)
+
+
+
+~~~~C++
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+using namespace std;
+
+const int maxn = 100010;
+int hashTable[maxn] = {0};
+
+struct Node
+{
+    int address, data, next;
+} node[maxn], dnode[maxn];
+
+int main()
+{
+    int n, begin;
+    cin >> begin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        int address;
+        cin >> address;
+        cin >> node[address].data >> node[address].next;
+        node[address].address = address;
+    }
+
+    int p = begin, numd = 0;
+    while(p != -1)
+    {
+        if(hashTable[abs(node[p].data)]==0)     //如果这是正确的节点，那么直接输出就行了
+        {
+            hashTable[abs(node[p].data)] =1;
+            if(p!=begin)
+                printf("%05d\n", node[p].address);                 //思考三个变量怎么输出？
+            printf("%05d %d ", node[p].address, node[p].data);   //address和data捆绑，就看next怎么输出，此时的address就是上一个的next
+        }
+        else    //用另外一个数组记录被删除的节点信息
+        {
+            dnode[numd].address = node[p].address;  
+            dnode[numd].data = node[p].data;
+            if(numd)
+                dnode[numd-1].next=node[p].address;     //最后一个一定是-1，单独标出来就行了
+            numd++;
+        }
+        p=node[p].next;
+
+    }
+    cout<<-1<<endl;
+    for(int i=0;i<numd;i++)
+    {
+        printf("%05d %d ", dnode[i].address, dnode[i].data);
+        if(i!=numd-1)
+            printf("%05d\n",dnode[i].next);
+        else
+             cout<<"-1"<<endl;  //这里要加else，因为放在外面的话如果无效节点是0也会输出-1
+            
+     }
+}
+~~~~
+
+
 
