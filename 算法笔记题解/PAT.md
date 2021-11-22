@@ -404,3 +404,171 @@ int main()
 
 
 
+
+
+## 搜索专题
+
+### DFS
+
+#### 1_
+
+![image-20211122151517418](https://i.loli.net/2021/11/22/CXTs7Zn2whayUzM.png)
+
+
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+const int maxn = 30;
+int n, v, maxValue = 0;
+int w[maxn], c[maxn];
+
+//index：处理的物品编号  sumW:当前总重量 sumC：当前总价值
+void DFS(int index, int sumW, int sumC)
+{
+    if (index == n) //已完成n件物品的选择(死胡同)
+        return;
+    DFS(index + 1, sumW, sumC); //不选此index产品
+    //剪枝：只有加入此index件物品之后不超过容量V才能继续
+    if (sumW + w[index] <= v)
+    {
+        if (sumC + c[index] > maxValue)
+            maxValue = sumC + c[index];
+        DFS(index + 1, sumW + w[index], sumC + c[index]); //选此index件物品
+    }
+}
+
+int main()
+{
+    cin >> n >> v;
+    for (int i = 0; i < n; i++)
+        cin >> w[i];
+    for (int i = 0; i < n; i++)
+        cin >> c[i];
+    
+    DFS(0,0,0); //初始为第0件物品
+    cout<<maxValue;
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211122155357004](https://i.loli.net/2021/11/22/3Q5fjVqi6CPAX8n.png)
+
+
+
+~~~C++
+#include <iostream>
+#include<vector>
+using namespace std;
+
+const int maxn = 100010;
+//序列A中选取k个数
+int n, k, x, maxSumSqu=-1, A[maxn];
+//temp存放临时方案， ans存放平方和最大的方案
+vector<int> temp, ans;
+//当前处理index号整数，当前已选整数个数为nowK
+//整数和：sum   整数平方和：sumSqu
+
+void DFS(int index, int nowK, int sum, int sumSqu)
+{
+    if(nowK==k && sum==x)	//如果找到k个数且和为x
+    {
+        if(sumSqu>maxSumSqu)	//是否更新maxSUmSqu
+        {
+            maxSumSqu = sumSqu;
+            ans = temp;
+        }
+        return ;
+    }
+
+    //已经处理完n个数，或者超过k个数返回
+    if(index == n || nowK>k || sum>x)
+        return ;
+    
+    //选index号数
+    temp.push_back(A[index]);
+    DFS(index+1,nowK+1,sum+A[index],sumSqu+A[index]*A[index]);
+    temp.pop_back();
+
+    //不选index号数
+    DFS(index+1, nowK,sum,sumSqu);
+}
+~~~
+
+
+
+#### 3_
+
+![image-20211122165716950](https://i.loli.net/2021/11/22/QTMADfaLzGkErq9.png)
+
+![image-20211122165732708](https://i.loli.net/2021/11/22/tfkIa1ouiwlMdEJ.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+int n, k, p, maxFacSum = -1;
+vector<int> fac, ans, temp;
+
+void init() //初始化v数组
+{
+    int temp = 0, index = 1;
+    while (temp <= n) //当index^p不大于n,不断加入v
+    {
+        fac.push_back(temp);
+        temp = pow(index++, p); //pow：幂次方函数
+    }
+}
+
+void DFS(int index, int nowK, int sum, int facSum)
+{
+    if (sum == n && nowK == k) //满足题中条件
+    {
+        if (facSum > maxFacSum) //若此时更优
+        {
+            ans = temp;
+            maxFacSum = facSum;
+        }
+        return;
+    }
+    if (sum > n || nowK > k) //此时到达死胡同
+        return;
+    if (index - 1 >= 0) //fac[0]不需要选择
+    {
+        temp.push_back(index);                                  //把底数index加入临时变量temp
+        DFS(index, nowK + 1, sum + fac[index], facSum + index); //选的分支
+        temp.pop_back();                                        //选的分支结束吼把刚加进去的数pop掉
+        DFS(index - 1, nowK, sum, facSum);                      //不选的分支
+    }
+}
+
+int main()
+{
+    cin >> n >> k >> p;
+    init;
+    DFS(fac.size() - 1, 0, 0, 0);
+    if (maxFacSum == -1)
+        cout << "Impossible" << endl;
+    else
+    {
+        printf("%d = %d^%d", n, ans[0], p);
+        for (int i = 1; i < ans.size(); i++)
+            printf(" + %d^%d", ans[i], p);
+    }
+}
+~~~
+
+
+
+
+
+
+
