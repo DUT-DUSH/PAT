@@ -410,6 +410,77 @@ int main()
 
 ### DFS
 
+>DFS深搜要点：
+>
+>1. 使用递归方式求解：先判断当前点是否为终点，非终点时递归调用DFS
+>2. 调用DFS前当前点标记为已访问，DFS执行结束后当前点标记为未访问：前者防止递归调用时重复访问当前点走回头路，后者是为探索其他路径时能重复访问该点。
+>3. 使用外部变量统计最小步
+
+
+
+#### 例_
+
+
+
+![image-20211123113017614](https://i.loli.net/2021/11/23/N5f6wVxri4RmyUb.png)
+
+
+
+~~~C++
+#include <iostream>
+#include<algorithm>
+using namespace std;
+
+int crr[5];
+int a[5][30];
+int minTime = 9999999;
+int Left , Right ;
+void DFS(int x, int y)
+{
+    
+    if (y == crr[x])    //到达终点说明一个方案已经完成
+    {
+
+        minTime = min(minTime, max(Left, Right));   
+        return;
+    }
+
+    //选择左脑处理
+    Left+=a[x][y];  //标记
+    DFS(x, y+1);
+    Left-=a[x][y];  //取消标记
+
+    //选择右脑处理
+    Right += a[x][y];
+    DFS(x, y+1);
+    Right -= a[x][y];
+}
+int main()
+{
+    for (int i = 0; i < 4; i++)
+        cin >> crr[i];
+
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < crr[i]; j++)
+            cin >> a[i][j];
+
+    int time = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        Left = 0, Right = 0;
+        minTime=99999;  //记住for循环中全局变量一定要想是否每一次都需要初始化！
+        DFS(i, 0);
+        time += minTime;
+    }
+    cout << time;
+}
+
+~~~
+
+
+
+
+
 #### 1_
 
 ![image-20211122151517418](https://i.loli.net/2021/11/22/CXTs7Zn2whayUzM.png)
@@ -420,6 +491,8 @@ int main()
 #include <iostream>
 using namespace std;
 
+//这个就可以想象成迷宫问题，死胡同n就是要到达的迷宫终点，求最大的价值也就是求不同的路径
+
 const int maxn = 30;
 int n, v, maxValue = 0;
 int w[maxn], c[maxn];
@@ -427,16 +500,16 @@ int w[maxn], c[maxn];
 //index：处理的物品编号  sumW:当前总重量 sumC：当前总价值
 void DFS(int index, int sumW, int sumC)
 {
-    if (index == n) //已完成n件物品的选择(死胡同)
+    if (index == n) //已完成n件物品的选择(死胡同)  //每一层的返回条件都是这个，意思就是每到一层就往下直到index==n，然后就返回	
         return;
-    DFS(index + 1, sumW, sumC); //不选此index产品
+    DFS(index + 1, sumW, sumC); //不选此index产品	//这块用局部变量保存的sumW要不也要像上面一样两端封住
     //剪枝：只有加入此index件物品之后不超过容量V才能继续
     if (sumW + w[index] <= v)
     {
         if (sumC + c[index] > maxValue)
             maxValue = sumC + c[index];
-        DFS(index + 1, sumW + w[index], sumC + c[index]); //选此index件物品
-    }
+        DFS(index + 1, sumW + w[index], sumC + c[index]); //选此index件物品，并往下进行	
+    }//每一步进行到这完事之后不需要return ，函数结束自然就进入上层函数了！ sumW因为是上层函数的变量所以自然继承！
 }
 
 int main()
@@ -482,7 +555,7 @@ void DFS(int index, int nowK, int sum, int sumSqu)
             maxSumSqu = sumSqu;
             ans = temp;
         }
-        return ;
+        return ;	
     }
 
     //已经处理完n个数，或者超过k个数返回
@@ -492,9 +565,9 @@ void DFS(int index, int nowK, int sum, int sumSqu)
     //选index号数
     temp.push_back(A[index]);
     DFS(index+1,nowK+1,sum+A[index],sumSqu+A[index]*A[index]);
-    temp.pop_back();
 
     //不选index号数
+    temp.pop_back();
     DFS(index+1, nowK,sum,sumSqu);
 }
 ~~~
@@ -514,6 +587,8 @@ void DFS(int index, int nowK, int sum, int sumSqu)
 #include <vector>
 #include <cmath>
 using namespace std;
+
+//这就跟上面一摸一样了
 
 int n, k, p, maxFacSum = -1;
 vector<int> fac, ans, temp;
@@ -545,7 +620,7 @@ void DFS(int index, int nowK, int sum, int facSum)
     {
         temp.push_back(index);                                  //把底数index加入临时变量temp
         DFS(index, nowK + 1, sum + fac[index], facSum + index); //选的分支
-        temp.pop_back();                                        //选的分支结束吼把刚加进去的数pop掉
+        temp.pop_back();                                 //选的分支结束后把刚加进去的数pop掉，意思是分支回溯回来之后要出栈，即设置为未访问
         DFS(index - 1, nowK, sum, facSum);                      //不选的分支
     }
 }
