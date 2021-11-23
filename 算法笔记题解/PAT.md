@@ -593,7 +593,7 @@ using namespace std;
 int n, k, p, maxFacSum = -1;
 vector<int> fac, ans, temp;
 
-void init() //初始化v数组
+void init() //初始化fac数组
 {
     int temp = 0, index = 1;
     while (temp <= n) //当index^p不大于n,不断加入v
