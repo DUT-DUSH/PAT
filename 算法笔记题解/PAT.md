@@ -653,8 +653,175 @@ int main()
 
 
 
+>TIPS:
+>
+>* inq的作用是判断位置是否入队而不是是否访问过，否则就会出现位置在队列里但尚未被访问，但是由于判断的是是否访问过，就会重复进入队列
+>* queue在使用的时候是创建了一个副本，所以无论是通过原数组改变队列的顺序内容还是通过队列改变原数组都是不可行的
+>* 所以queue存放的元素不要是元素本身，而最好是元素的下标（例如老鼠的排名那道题）
+
+
+
+
+
+
+
+#### 例_
+
+![image-20211125095349230](https://i.loli.net/2021/11/25/1tlI6D3ezbXY9kM.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+int T, n;
+int sx, sy, ex, ey;
+char mp[1010][1010];
+
+int X[4] = {1, -1, 0, 0};
+int Y[4] = {0, 0, 1, -1};
+
+struct Node
+{
+    int x, y;
+} node;
+
+void BFS()
+{
+    queue<Node> q;
+    node.x = sx;
+    node.y = sy;
+    mp[node.x][node.y] = '#'; //走过的标记为#即不能再访问
+    q.push(node);
+    while (!q.empty())
+    {
+        Node top = q.front(); //新开一个Node记录开始的节点
+        q.pop();
+        if (top.x == ex && top.y == ey) //到达终点
+        {
+            cout << "YES" << endl;
+            return ;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            node.x = top.x + X[i];
+            node.y = top.y + Y[i];
+            if (node.x >= 0 && node.x < n && node.y >= 0 && node.y < n && mp[node.x][node.y] == '.')
+            {
+                q.push(node);
+                mp[node.x][node.y] = '#';
+            }
+        }
+    }
+        cout << "NO" << endl;
+}
+int main()
+{
+    cin >> T;
+    while (T--)
+    {
+        cin >> n;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                cin >> mp[i][j];
+        cin >> sx >> sy >> ex >> ey;
+        if (mp[sx][sy] == '#' || mp[ex][ey] == '#')
+            cout << "NO" << endl;
+        else 
+            BFS();
+    }
+}
+~~~
+
 
 
 #### 1_
 
 ![image-20211124212234920](https://i.loli.net/2021/11/24/DObQzsLZmcMqSCp.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+using namespace std;
+
+struct Node
+{
+    int x, y; //位置
+
+} node;
+
+const int maxn = 100;
+int n, m;
+int matrix[maxn][maxn];         //01矩阵
+bool inq[maxn][maxn] = {false}; //记录位置xy是否入队
+int X[4] = {0, 0, 1, -1};       //增量数组
+int Y[4] = {1, -1, 0, 0};
+
+bool judge(int x, int y) //判断BFS是否需要访问该位置
+{
+    if (x >= n || x < 0 || y >= n || y < 0) //越界返回false
+        return false;
+    if (matrix[x][y] == 0 || inq[x][y] == true) //位置为0或者访问过
+        return false;
+    return true;
+}
+
+//BFS目的是访问xy周围的位置并设为true，表示这些true的都是一块的
+void BFS(int x, int y)
+{
+    queue<Node> q;
+    node.x = x;
+    node.y = y;
+    inq[x][y] = true;
+    q.push(node);
+    while (!q.empty())
+    {
+        //因为每次循环中队首元素都不一样，而第一次的是输入的xy
+        Node top = q.front(); //队首元素是front()
+        q.pop();
+        for (int i = 0; i < 4; i++)
+        {
+            int newX = top.x + X[i];
+            int newY = top.y + Y[i];
+            if (judge(newX, newY))  //如果需要访问
+            {
+                node.x = newX;
+                node.y = newY;
+                q.push(node);           //将节点node加入队列
+                inq[newX][newY] = true; //位置设置已入队
+            }
+        }
+    }
+}
+    int main()
+    {
+        cin >> n >> m;
+        for (int x = 0; x < n; x++)
+            for (int y = 0; y < m; y++)
+                cin >> matrix[x][y];
+        int ans;
+        for (int x = 0; x < n; x++)
+            for (int y = 0; y < m; y++)
+            {
+                if (matrix[x][y] = 1 && inq[x][y] == false) //看判断方法，也就是记录第一个遇到的数，如果没被标记过说明没有被BFS查到过也就是不属于这一块
+                {
+                    ans++;
+                    BFS(x, y);  //访问整个块，将所有1标为true
+                }
+            }
+
+        cout << ans << endl;
+    }
+~~~
+
+
+
+#### 2_
+
+
+
