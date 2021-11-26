@@ -408,6 +408,16 @@ int main()
 
 ## 搜索专题
 
+### DFS和BFS的区分
+
+>1**.BFS**是用来**搜索最短径路的解**是比较合适的，比如求最少步数的解，最少交换次数的解，因为BFS搜索过程中遇到的解一定是离根最近的，所以遇到一个解，一定就是最优解，此时搜索算法可以终止。这个时候不适宜使用DFS，因为DFS搜索到的解不一定是离根最近的，只有全局搜索完毕，才能从所有解中找出离根的最近的解。（当然这个DFS的不足，可以使用迭代加深搜索ID-DFS去弥补）
+>2.**空间优劣**上，**DFS**是有优势的，DFS不需要保存搜索过程中的状态，而BFS在搜索过程中需要保存搜索过的状态，而且一般情况需要一个队列来记录。
+>3.**DFS**适合**搜索全部的解**，因为要搜索全部的解，那么BFS搜索过程中，遇到离根最近的解，并没有什么用，也必须遍历完整棵搜索树，DFS搜索也会搜索全部，但是相比DFS不用记录过多信息，所以搜素全部解的问题，DFS显然更加合适。
+
+
+
+
+
 ### DFS
 
 >DFS深搜要点：
@@ -823,5 +833,89 @@ void BFS(int x, int y)
 
 #### 2_
 
+![image-20211126145552806](https://i.loli.net/2021/11/26/AtGYaysmfgcrzWH.png)
 
+~~~C++
+#include <iostream>
+#include <queue>
+
+
+//和上一道思路一模一样，只是变成三维的了，用DFS会爆栈
+using namespace std;
+
+int T, n, m, slice;
+int pixel[1290][130][61];	//虽然只是01但也要设置成int
+bool inq[1290][130][61] = {false};
+
+struct Node
+{
+    int x, y, z;
+} node;
+
+int X[6] = {0, 0, 0, 0, 1, -1};
+int Y[6] = {0, 0, 1, -1, 0, 0};
+int Z[6] = {1, -1, 0, 0, 0, 0};
+
+bool judge(int x, int y, int z)
+{
+    if (x >= n || x < 0 || y >= m || y < 0 || z >= slice || z < 0) //位置边界判断
+        return false;
+    if (pixel[x][y][z] == 0 || inq[x][y][z] == true) //位置逻辑判断
+        return false;
+    return true;
+}
+
+int BFS(int x, int y, int z)
+{
+    int total = 0;
+    node.x = x;
+    node.y = y;
+    node.z = z;
+    queue<Node> q;
+    q.push(node);
+    inq[x][y][z] = true;
+
+    while (!q.empty())
+    {
+        total++;
+        Node top = q.front();
+        q.pop();
+        for (int i = 0; i < 6; i++)
+        {
+            int newX = top.x + X[i];
+            int newY = top.y + Y[i];
+            int newZ = top.z + Z[i];
+            if (judge(newX, newY, newZ))
+            {
+                node.x = newX;
+                node.y = newY;
+                node.z = newZ;
+                q.push(node);
+                inq[newX][newY][newZ] = true;
+            }
+        }
+    }
+    if (total >= T)
+        return total;
+    else
+        return 0;
+}
+
+int main()
+{
+    cin >> n >> m >> slice >> T;
+    for (int z = 0; z < slice; z++)
+        for (int x = 0; x < n; x++)
+            for (int y = 0; y < m; y++)
+                cin >> pixel[x][y][z];
+
+    int ans = 0;
+    for (int z = 0; z < slice; z++)
+        for (int x = 0; x < n; x++)
+            for (int y = 0; y < m; y++)
+                if (pixel[x][y][z] == 1 && inq[x][y][z] == false)
+                    ans += BFS(x, y, z);
+    cout << ans << endl;
+}
+~~~
 
