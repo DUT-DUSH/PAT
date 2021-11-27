@@ -1,6 +1,14 @@
 # PAT
 
-## 数据结构专题
+## STL
+
+### vector
+
+
+
+
+
+## 数据结构专题(1)
 
 ### 栈应用
 
@@ -919,3 +927,100 @@ int main()
 }
 ~~~
 
+
+
+## 数据结构专题(2)
+
+### 二叉树基础
+
+#### 二叉树的存储结构
+
+~~~C++
+//二叉链表
+struct node
+{
+    int data;
+    node *lchild;
+    node *rchild;
+};
+
+node *root = NULL;
+
+//新建结点
+node *newNode(int v)
+{
+    node *Node = new node;
+    Node->data = v;
+    Node->lchild = Node->rchild = NULL;
+    return Node;
+}
+~~~
+
+
+
+#### 二叉树结点的查找修改
+
+~~~C++
+//递归查找x并替换为data
+void search(node *root, int x, int newdata)
+{
+    if (root == NULL)
+        return;
+    if (root->data == x)
+        root->data = newdata;
+    search(root->lchild, x, newdata);	//递归遍历查找
+    search(root->rchild, x, newdata);
+}
+~~~
+
+
+
+#### 二叉树结点的插入
+
+>* 根指针root要引用，search修改的是指针指向的内容所以不用加&，而insert新建了节点并且把地址赋给root，如果不加引用，对root的修改就无法作用到原变量上
+>
+>* **判断是否引用**：如果要新建结点，即对二叉树的结构进行修改就需要加引用；如果只是修改当前结点现有的内容，或仅仅是遍历树，就不需要加引用
+>  * root == NULL 而不是 *root ==NULL ， *root指的是root这个指针指向地址中的值， 而需要判断的是有无根结点root 而不是根结点root指向的值是否为空
+
+~~~C++
+void insert(node *&root, int x)
+{
+    if (root == NULL)
+    {
+        root = newNode(x);
+        return;
+    }
+    if (x < root->data) //>...条件根据题意变化，这里是x与根结点比较大小，如果小于就做根结点的左孩子
+        insert(root->lchild, x);
+    else
+        insert(root->rchild, x);
+}
+~~~
+
+
+
+#### 二叉树的创建
+
+~~~C++
+//二叉树的创建,数据存储在数组中
+node *creat(int data[], int n)
+{
+    node *root = NULL;
+    for (int i = 0; i < n; i++)
+        insert(root, data[i]);
+    return root;
+}
+~~~
+
+
+
+> * **判断某个结点是否为叶节点**： 该结点左子结点标号root*2 大于总节点个数
+> * **判断是否为空结点：**该结点标号大于节点总个数n
+
+### 二叉树的遍历
+
+
+
+
+
+ 
