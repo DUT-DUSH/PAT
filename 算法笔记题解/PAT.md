@@ -1017,6 +1017,122 @@ node *creat(int data[], int n)
 > * **判断某个结点是否为叶节点**： 该结点左子结点标号root*2 大于总节点个数
 > * **判断是否为空结点：**该结点标号大于节点总个数n
 
-### 二叉树
+### 二叉树的遍历
 
+>* **中序序列可以与先序序列、后序序列、层次序列中的任意一个来构建唯一的二叉树**，而后三者两两搭配或是三个一起上都无法构建唯一的二叉树。原因是先序、后序、层次都是**提供根结点**，作用是相同的，都必须由中序序列来区分出左右子树
+
+
+
+ ~~~C++
+ //先序遍历
+ void preorder(node *root)
+ {
+     if (root == NULL)
+         return;
+     cout<<root->data;
+     preorder(root->lchild);
+     preorder(root->rchild);
+ }
  
+ //中序遍历
+ void preorder(node *root)
+ {
+     if (root == NULL)
+         return;
+     preorder(root->lchild);
+     cout << root->data;
+     preorder(root->rchild);
+ }
+ 
+ //后序遍历
+ void preorder(node *root)
+ {
+     if (root == NULL)
+         return;
+     preorder(root->lchild);
+     preorder(root->rchild);
+     cout << root->data;
+ }
+ 
+ 
+ //层次遍历
+ //即对二叉树从根结点开始的BFS
+ 
+ struct node
+ {
+     int data;
+     int layer; //层次
+     node *lchild;
+     node *rchild;
+ };
+ 
+ void LayerOrder(node *root)
+ {
+     queue<node *> q; //注意队列里存地址
+     root->layer = 1; //根结点的层次为1
+     q.push(root);
+     while (!q.empty())
+     {
+         node *top = q.front(); //取出队首元素
+         q.pop();
+         cout<<top->data;    //访问队首元素
+         if(top->lchild!= NULL)  //左子树非空
+         {
+             top->lchild->layer=top->layer+1;
+             q.push(top->lchild);
+         }
+         if (top->lchild != NULL) //右子树非空
+         {
+             top->rchild->layer = top->layer + 1;
+             q.push(top->rchild);
+         }
+     }
+ }
+ ~~~
+
+
+
+#### 给定先序和中序，创建二叉树
+
+> * 思路：先序序列pre1,pre2,pre3...，中序序列in1,in2,in3...。
+>   1. 先在中序找到某个结点ink，使得ink==pre1，这就在中序中找到了根结点
+>   2. 左子树的结点个数 numLeft = k - 1
+>   3. 左子树先序区间：[2 , k]       左子树中序区间：[1 , k-1]   
+>   4. 右子树先序区间：[k+1 , n]    右子树中序区间：[k+1 , n]
+> * 通用：先序序列[preL , preR], 中序序列[inL ,  inR]
+>   1. 左子树结点个数:numLeft = k - inL
+>   2. 左子树先序区间：[preL + 1 , preL+ numLeft]        左子树中序区间：[inL , k-1]      
+>   3.   右子树先序区间：[numLeft+1 , preR]     右子树中序区间：[k+1 , inR]
+
+ ![image-20211127162746070](https://i.loli.net/2021/11/27/cvLPYQySzCHft2X.png)
+
+
+
+~~~C++
+int pre[100010];
+int in[100010];
+node* creat(int preL, int preR, int inL, int inR)
+{
+    if(preL>preR)   //先序序列长度小于0，直接返回
+        return NULL;
+    node* root = new node;   //存放二叉树的根结点
+    root->data = pre[preL]; 
+    int k;  
+    for(k=inL; k<inR;k++)
+    {
+        if(in[k] == pre[preL])    //找到in[k]==pre[preL]的结点
+            break;
+    }
+
+    int numLeft = k-inL;
+    
+    //构建左子树
+    root->lchild=creat(preL + 1, preL + numLeft, inL, k-1);
+
+    //构建右子树
+    root->rchild = creat(preL + numLeft+1, preR, k+1, inR);
+
+    return root;
+}
+~~~
+
