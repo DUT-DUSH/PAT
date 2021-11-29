@@ -1296,3 +1296,119 @@ int main()
 }
 ~~~
 
+
+
+#### 3_
+
+![image-20211129202809415](https://i.loli.net/2021/11/29/hBEUGnDATNHweoi.png)
+
+
+
+
+
+> * 这道题用的是静态二叉树，先通过题中输入构建静态二叉树，通过后序遍历可以反转二叉树
+> * 要先找到根，根也就是不是任何结点的子节点，可以通过一个bool数组实现
+> * 代码分模块就很清晰
+
+~~~C++
+#include <iostream>
+#include <queue>
+#include <algorithm>
+using namespace std;
+
+const int maxn = 110;
+int n, num = 0;
+bool notRoot[maxn] = {false};
+struct node
+{
+    int lchild, rchild;
+} Node[maxn];
+
+void print(int root)
+{
+    cout << root;
+    num++;
+    if (num < n)
+        cout << " ";
+    else
+        cout << endl;
+}
+
+int strToNum(char c)
+{
+    if (c == '-')
+        return -1;
+    else
+    {
+        notRoot[c - '0'] = true;
+        return c - '0';
+    }
+}
+
+void postorder(int root) //反转二叉树的办法
+{
+    if (root == -1)
+        return;
+    postorder(Node[root].lchild);
+    postorder(Node[root].rchild);
+    swap(Node[root].lchild, Node[root].rchild); //交换左右孩子节点
+}
+
+void BFS(int root)
+{
+    queue<int> q;
+    q.push(root);
+
+    while (!q.empty())
+    {
+        int top = q.front();
+        print(top);
+        q.pop();
+        if (Node[top].lchild != -1)
+            q.push(Node[top].lchild);
+        if (Node[top].rchild != -1)
+            q.push(Node[top].rchild);
+    }
+}
+
+void inorder(int root)
+{
+    if (root == -1)
+        return;
+    inorder(Node[root].lchild);
+    print(root);
+    inorder(Node[root].rchild);
+}
+
+int findRoot()
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (notRoot[i] == false)
+            return i;
+    }
+}
+int main()
+{
+    char lchild, rchild;
+    cin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        cin >> lchild >> rchild;
+        Node[i].lchild = strToNum(lchild);
+        Node[i].rchild = strToNum(rchild);
+    }
+
+    int root = findRoot();
+    postorder(root);
+    BFS(root);
+    num = 0;
+    inorder(root);
+}
+
+~~~
+
+
+
+### 树的遍历
+
