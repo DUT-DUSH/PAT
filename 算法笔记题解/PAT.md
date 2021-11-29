@@ -1035,7 +1035,7 @@ node *creat(int data[], int n)
  }
  
  //中序遍历
- void preorder(node *root)
+ void inorder(node *root)
  {
      if (root == NULL)
          return;
@@ -1045,7 +1045,7 @@ node *creat(int data[], int n)
  }
  
  //后序遍历
- void preorder(node *root)
+ void postorder(node *root)
  {
      if (root == NULL)
          return;
@@ -1102,7 +1102,7 @@ node *creat(int data[], int n)
 > * 通用：先序序列[preL , preR], 中序序列[inL ,  inR]
 >   1. 左子树结点个数:numLeft = k - inL
 >   2. 左子树先序区间：[preL + 1 , preL+ numLeft]        左子树中序区间：[inL , k-1]      
->   3.   右子树先序区间：[numLeft+1 , preR]     右子树中序区间：[k+1 , inR]
+>   3.   右子树先序区间：[preL+numLeft+1 , preR]     右子树中序区间：[k+1 , inR]
 
  ![image-20211127162746070](https://i.loli.net/2021/11/27/cvLPYQySzCHft2X.png)
 
@@ -1111,28 +1111,188 @@ node *creat(int data[], int n)
 ~~~C++
 int pre[100010];
 int in[100010];
-node* creat(int preL, int preR, int inL, int inR)
+node *creat(int preL, int preR, int inL, int inR)
 {
-    if(preL>preR)   //先序序列长度小于0，直接返回
+    if (preL > preR) //先序序列长度小于0，直接返回
         return NULL;
-    node* root = new node;   //存放二叉树的根结点
-    root->data = pre[preL]; 
-    int k;  
-    for(k=inL; k<inR;k++)
+    node *root = new node; //存放二叉树的根结点
+    root->data = pre[preL];
+    int k;
+    for (k = inL; k <= inR; k++) //这里是 <=
     {
-        if(in[k] == pre[preL])    //找到in[k]==pre[preL]的结点
+        if (in[k] == pre[preL]) //找到in[k]==pre[preL]的结点
             break;
     }
 
-    int numLeft = k-inL;
-    
+    int numLeft = k - inL;
+
     //构建左子树
-    root->lchild=creat(preL + 1, preL + numLeft, inL, k-1);
+    root->lchild = creat(preL + 1, preL + numLeft, inL, k - 1);
+    //注意这里的preL + numLeft， 实际上是 preL+1 + numLeft-1  ,因为是闭区间，加0的长度是1，长度是numLeft应该加numLeft-1
 
     //构建右子树
-    root->rchild = creat(preL + numLeft+1, preR, k+1, inR);
+    root->rchild = creat(preL + numLeft + 1, preR, k + 1, inR);
 
     return root;
+}
+~~~
+
+
+
+#### 1_
+
+![image-20211129141147084](https://i.loli.net/2021/11/29/FtDcQbrOzaEinoM.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+using namespace std;
+
+const int maxn = 31;
+
+struct node
+{
+    int data;
+    node *lchild;
+    node *rchild;
+};
+int post[maxn], in[maxn];
+int n, num = 0;
+
+node *creat(int postL, int postR, int inL, int inR) //注意这里的都是下标
+{
+    if (postL > postR)
+        return NULL;
+    node *root = new node;
+    root->data = post[postR]; //指出根结点
+    int k;
+    for (k = inL; k <=inR; k++)
+        if (in[k] == post[postR])
+            break;
+
+    int numLeft = k - inL;
+
+    //注意这里的postL+numLeft-1
+    root->lchild = creat(postL, postL + numLeft - 1, inL, k - 1); //指出左结点
+
+    root->rchild = creat(postL + numLeft, postR - 1, k + 1, inR); //指出右结点
+
+    return root;
+}
+
+void BFS(node *root)
+{
+    queue<node *> q;
+    q.push(root);
+    while (!q.empty())
+    {
+        node *top = q.front();
+        q.pop();
+        cout << top->data;
+        num++;
+        if (num < n)
+            cout << " ";
+        if (top->lchild!=NULL)
+            q.push(top->lchild);
+        if (top->rchild!=NULL)
+            q.push(top->rchild);
+    }
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 0; i < n; i++)
+        cin >> post[i];
+    for (int i = 0; i < n; i++)
+        cin >> in[i];
+    node *root = creat(0, n - 1, 0, n - 1);
+    BFS(root);
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211129154755397](https://i.loli.net/2021/11/29/pdGWMT3fai2POU9.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+#include <stack>
+using namespace std;
+
+const int maxn = 31;
+
+struct node
+{
+    int data;
+    node *lchild;
+    node *rchild;
+};
+int pre[maxn], in[maxn];
+int n, num = 0;
+
+node *creat(int preL, int preR, int inL, int inR)
+{
+    node *root = new node;
+    if (preL > preR)
+        return NULL;
+    root->data = pre[preL];
+    int k;
+    for (k = inL; k <= inR; k++)
+        if (in[k] == pre[preL])
+            break;
+
+    int numLeft = k - inL;
+
+    root->lchild = creat(preL + 1, preL + numLeft, inL, k - 1);
+    root->rchild = creat(preL + numLeft + 1, preR, k + 1, inR);
+    return root;
+}
+
+void postorder(node *root)
+{
+    if (root == NULL)
+        return;
+    postorder(root->lchild);
+    postorder(root->rchild);
+    cout << root->data;
+    num++;
+    if (num < n)
+        cout << " ";
+}
+int main()
+{
+    stack<int> sta;
+    cin >> n;
+    int num1 = 0, num2 = 0;
+    for (int i = 0; i < 2 * n; i++)
+    {
+        string s;
+        cin >> s;
+        if (s == "Push")
+        {
+            int data;
+            cin >> data;
+            pre[num1++] = data;
+            sta.push(data);
+        }
+        else
+        {
+            in[num2++] = sta.top();
+            sta.pop();
+        }
+    }
+
+    node *root = new node;
+    root = creat(0, n - 1, 0, n - 1);
+    postorder(root);
 }
 ~~~
 
