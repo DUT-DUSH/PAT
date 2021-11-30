@@ -1410,5 +1410,169 @@ int main()
 
 
 
-### 树的遍历
+# 树的遍历
+
+#### 1_
+
+![image-20211130092024391](https://i.loli.net/2021/11/30/9FY8rzxE2BqvyIC.png)
+
+
+
+~~~C++
+#include<iostream>
+#include<cmath>
+#include<vector>
+using namespace std;
+
+const int maxn = 100010;
+struct node
+{
+    double data;
+    vector<int> child;
+}Node[maxn];
+int n;
+double p, r, ans=0; //ans为结点货物的价格之和
+
+void DFS(int index, int depth)      //树的DFS
+{
+    if(Node[index].child.size()==0)   //到达叶结点即死胡同
+    {
+        ans+=Node[index].data*pow(1+r, depth);
+        return ;
+    }
+    for(int i=0; i<Node[index].child.size();i++)
+        DFS(Node[index].child[i], depth+1);     //递归访问子结点
+}
+
+int main()
+{
+    int k, child;
+    cin>>n>>p>>r;
+    r/=100;
+    for(int i=0;i<n;i++)
+    {
+        cin>>k;
+        if(k==0)
+            cin>>Node[i].data;
+        else
+            for(int j=0;j<k;j++)
+            {
+                cin>>child;
+                Node[i].child.push_back(child);
+            }
+    }
+
+    DFS(0,0);
+    printf("%.1f",p*ans);
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211130094518275](https://i.loli.net/2021/11/30/PdhSVUBLKEf1b8w.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <cmath>
+#include <vector>
+using namespace std;
+
+const int maxn = 110;
+vector<int> Node[maxn];
+int hashTable[maxn] = {0};
+
+void DFS(int index, int level)
+{
+    hashTable[level]++;
+    //这里不需要递归边界，因为通过for循环就可以保存每一层的结点树
+    for (int i = 0; i < Node[index].size(); i++) //遍历所有孩子结点
+        DFS(Node[index][i], level + 1);
+}
+
+int main()
+{
+    int n, m, parent, k, child;
+    cin >> n >> m;
+    for (int i = 0; i < m; i++)
+    {
+        cin >> parent >> k;
+        for (int j = 0; j < k; j++)
+        {
+            cin >> child;
+            Node[parent].push_back(child);
+        }
+    }
+    DFS(1, 1); //根结点为1号， 层号为1
+    int maxLevel = -1, maxValue = 0;
+    for (int i = 1; i < maxn; i++)
+    {
+        if (hashTable[i] > maxValue)
+        {
+            maxValue = hashTable[i];
+            maxLevel = i;
+        }
+    }
+    cout << maxValue <<" "<< maxLevel;
+}
+~~~
+
+
+
+#### 3_
+
+![image-20211130102136973](https://i.loli.net/2021/11/30/MSnpztdBKYl3Jfq.png)
+
+
+
+~~~C++
+#include<iostream>
+#include<cmath>
+#include<vector>
+using namespace std;
+
+const int maxn = 110;
+vector<int> Node[maxn];
+int leaf[maxn] = {0};
+int maxd=1;
+
+void DFS(int index, int depth)
+{
+    maxd=max(maxd,depth);
+    if(Node[index].size()==0)
+    {
+        leaf[depth]++;
+        return ;
+    }
+    for(int i=0;i<Node[index].size();i++)
+        DFS(Node[index][i],depth+1);
+}
+
+int main()
+{
+    int n, m;
+    cin>>n>>m;
+    for(int i=0;i<m;i++)
+    {
+        int parent, k;
+        cin>>parent>>k;
+        for(int j=0;j<k;j++)
+        {
+            int child;
+            cin>>child;
+            Node[parent].push_back(child);
+        }
+    }
+    DFS(1,1);
+    for(int i=1;i<=maxd;i++)
+    {
+        cout << leaf[i];
+        if (i < maxd)
+            cout << " ";
+    }
+}
+~~~
 
