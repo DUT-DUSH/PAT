@@ -1576,3 +1576,99 @@ int main()
 }
 ~~~
 
+
+
+#### 4_
+
+![image-20211130163806010](https://i.loli.net/2021/11/30/mzJ27cnwD4FNELd.png)
+
+![image-20211130163923045](https://i.loli.net/2021/11/30/lGwAgP1idkBWRF3.png)
+
+
+
+>* 怎么确定递归边界？不能思维僵化，为什么以前都是看是否是叶子结点？因为题目的要求就是你在叶子结点的时候才进行操作，比如算链上的总金额。
+>
+>  * 这次为什么是sum？因为题目中的要求就是weight的和等于题中所给，递归边界自然就是了
+>
+>* 参数怎么判断？
+>
+>  * 递归边界是什么？参数中一定有能够和递归边界比较的参数sum
+>
+>  * 如何往下递归？参数中一定有能催动往下递归的参数index,
+>  * numNode则是要输出path的必要条件，因为长度和内容都是在递归过程中动态改变的
+
+~~~C++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+const int maxn = 110;
+struct node
+{
+    int weight;
+    vector<int> child;
+} Node[maxn];
+
+int n, m, s;
+int path[maxn]; //记录路径
+
+bool cmp(int a, int b)
+{
+    return Node[a].weight > Node[b].weight;
+}
+
+//参数一个是必须要有的索引，一个是当前路径上的结点个数
+//没有它就无法输出合适的空格以及路径的赋值，一个是sum，用以递归边界的比较
+void DFS(int index, int numNode, int sum)
+{
+    if (sum > s)
+        return;
+    if (sum == s)
+    {
+        if (Node[index].child.size() != 0)
+            return;
+
+        for (int i = 0; i < numNode; i++)
+        {
+            cout << Node[path[i]].weight; //path存的仅仅是结点的索引而已
+            if (i < numNode - 1)
+                cout << " ";
+            else
+                cout << endl;
+        }
+        return;
+    }
+
+    for (int i = 0; i < Node[index].child.size(); i++)
+    {
+        int child = Node[index].child[i];
+        path[numNode] = child;
+        DFS(child, numNode + 1, sum + Node[child].weight);
+    }
+}
+
+int main()
+{
+    cin >> n >> m >> s;
+    for (int i = 0; i < n; i++)
+        cin >> Node[i].weight;
+    for (int i = 0; i < m; i++)
+    {
+        int parent, k;
+        cin >> parent >> k;
+        for (int j = 0; j < k; j++)
+        {
+            int child;
+            cin >> child;
+            Node[parent].child.push_back(child);
+        }
+        sort(Node[parent].child.begin(), Node[parent].child.end(), cmp);
+    }
+
+    path[0] = 0; //路径中的第一个结点设置为0号结点
+    DFS(0, 1, Node[0].weight);
+    return 0;
+}
+
+~~~
+
