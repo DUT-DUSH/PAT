@@ -1785,7 +1785,7 @@ void deleteNode(node *&root, int x)
 
 
 
-#### 二叉树的性质
+#### BST的性质
 
 > * 中序遍历的结果是有序的
 
@@ -1930,6 +1930,133 @@ int main()
 
 
 #### 2_
+
+![image-20211202205620954](https://i.loli.net/2021/12/02/4ROqN1IzsMY926w.png)
+
+
+
+![image-20211202205641358](https://i.loli.net/2021/12/02/XAt5JET73Z89rzw.png)
+
+> * 看到是完全二叉排序树，想到应该用上面的性质做
+> * 另一重要性质是中序序列递增
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+const int maxn = 1010;
+//因为BST的中序序列是递增的，所以先递增给出的序列，那么这就是BST中序的序列
+//然后对二叉树进行中序遍历的同时，给CBT赋值，那么这就是完全二叉树的层次序列了
+//因为中序遍历的情况下，一定是先遍历左子树，由于是复制操作，所以一定会赋值
+
+//n为结点数， number用以存放结点权值，CBT存放完全二叉树
+//index从小到大枚举number数组
+int n, number[maxn], CBT[maxn], index = 0;
+
+void inorder(int root)
+{
+    if (root > n) //空结点，直接返回
+        return;
+
+    inorder(root * 2);
+    CBT[root] = number[index++];
+    inorder(root * 2 + 1);
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 0; i < n; i++)
+        cin >> number[i];
+    sort(number, number + n); //从小到大排序
+    inorder(1);               //根结点必须设为1号
+    for (int i = 1; i <= n; i++)
+    {
+        cout << CBT[i];
+        if (i < n)
+            cout << " ";
+    }
+}
+~~~
+
+
+
+#### 3_
+
+![image-20211202210049400](https://i.loli.net/2021/12/02/rFHBwtm6J4p13e7.png)
+
+![image-20211202210105257](https://i.loli.net/2021/12/02/lOXuFAxdtjC1HKh.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+const int maxn = 1010;
+
+struct node
+{
+    int data;
+    int lchild, rchild;
+} Node[maxn];
+
+int n, in[maxn], num = 0;
+
+//这已经成模板了
+//给定序列生成BST就用性质
+//中序序列有序，先排序题中序列再匹配就行
+void inorder(int root)
+{
+    if (root == -1)
+        return;
+
+    inorder(Node[root].lchild);
+    Node[root].data = in[num++];
+    inorder(Node[root].rchild);
+}
+
+void BFS(int root)
+{
+    queue<int> q;
+    q.push(root);
+    num = 0;
+    while (!q.empty())
+    {
+        int top = q.front();
+        q.pop();
+        cout << Node[top].data;
+        num++;
+        if (num < n)
+            cout << " ";
+        if (Node[top].lchild != -1)
+            q.push(Node[top].lchild);
+        if (Node[top].rchild != -1)
+            q.push(Node[top].rchild);
+    }
+}
+
+int main()
+{
+    int lchild, rchild;
+    cin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        cin >> lchild >> rchild;
+        Node[i].lchild = lchild;
+        Node[i].rchild = rchild;
+    }
+
+    for (int i = 0; i < n; i++)
+        cin >> in[i];
+    sort(in, in + n);
+    inorder(0); //因为这时候不需要用2n和2n+1判断了，所以可以从0开始
+    BFS(0);
+}
+~~~
 
 
 
