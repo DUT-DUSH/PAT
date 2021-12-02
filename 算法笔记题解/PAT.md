@@ -1410,7 +1410,7 @@ int main()
 
 
 
-# 树的遍历
+### 树的遍历
 
 #### 1_
 
@@ -1671,4 +1671,267 @@ int main()
 }
 
 ~~~
+
+
+
+### 二叉查找树
+
+#### BST的基本操作
+
+##### 查找
+
+~~~C++
+void search(node *root, int x)
+{
+    if (root == NULL) //空树，查找失败
+    {
+        cout << "search failed" << endl;
+        return;
+    }
+    if (x == root->data) //查找成功
+        cout << root->data << endl;
+    else if (x < root->data)
+        search(root->lchild, x);
+    else
+        search(root->rchild, x);
+}
+
+~~~
+
+
+
+##### 插入操作
+
+~~~C++
+//插入和查找一样的，只不过如果找不到就插入，找到了就退出
+void insert(node* &root, int x)		//翻前面看看什么时候该引用？
+{
+    if(root == NULL)    //结点为空，即为插入位置
+    {
+        root = newnode(x);
+        return;
+    }
+    if (x == root->data) //查找成功,说明已经有了要插入的结点
+        return;
+    else if (x < root->data)
+        insert(root->lchild, x);
+    else
+        insert(root->rchild, x);
+}
+~~~
+
+
+
+##### BST的建立
+
+~~~C++
+node *creat(int data[], int n)
+{
+    node *root = NULL;
+    for (int i = 0; i < n; i++)
+        insert(root, data[i]);
+    return root;
+}
+~~~
+
+
+
+##### BST的删除
+
+> 删除的结点用前驱结点或者后继节点代替
+
+~~~C++
+node *findMax(node *root) //寻找root为根结点树中的最大权值结点
+{
+    while (root->rchild != NULL)
+        root = root->rchild; //不断往右，找到最大结点
+    return root;
+}
+node *findMin(node *root) //寻找root为根结点树中的最小权值结点
+{
+    while (root->lchild != NULL)
+        root = root->lchild; //不断往左，找到最小结点
+    return root;
+}
+
+//删除以root为根结点的树中权值为x的结点
+void deleteNode(node *&root, int x)
+{
+    if (root == NULL) //不存在权值为x的结点
+        return;
+    if (root->data == x) //找到欲删除结点
+    {
+        if (root->lchild == NULL && root->rchild == NULL) //如果是叶子结点就直接删除
+            root == NULL;
+        else if (root->lchild != NULL) //左子树不为空
+        {
+            node *pre = findMax(root->lchild);   //找root前驱，即左子树中权值最大结点
+            root->data = pre->data;              //用前驱覆盖root
+            deleteNode(root->lchild, pre->data); //删除结点pre
+        }
+        else //右子树不为空
+        {
+            node *pre = findMin(root->rchild);   //找root后继，即右子树中权值最小结点
+            root->data = pre->data;              //用后继覆盖root
+            deleteNode(root->rchild, pre->data); //删除结点pre
+        }
+    }
+    else if (x < root->data)
+        deleteNode(root->lchild, x);
+    else
+        deleteNode(root->rchild, x);
+}
+~~~
+
+
+
+#### 二叉树的性质
+
+> * 中序遍历的结果是有序的
+
+
+
+
+
+#### 1_
+
+![image-20211202104620446](https://i.loli.net/2021/12/02/qht5Zy8jC69nexD.png)
+
+
+
+> * 创建指针时，new和 =NULL的区别
+>
+>   * =null只是声明一个对象，并不实际占用空间。
+>
+>     如：HBPWDto hbpwDto = null; 相当于HBPWDto hbpwDto ;
+>
+>    * new，把对象实例化了，这个对象会一直占用空间（虽然不一定使用），直到被回收。
+>
+> * 如果只是做赋值操作，只需要声明就行了 ，在需要的时候再赋予具体的值
+>
+> * 如果是通过该对象做取值操作，就需要一开始就实例化，否则报nulpointException。
+>
+> * 这就是insert里面为什么要new，因为要进行root->data，必须要先有一个空间
+
+
+
+~~~C++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct node
+{
+    int data;
+    node *lchild;
+    node *rchild;
+};
+
+void insert(node *&root, int x)
+{
+    if (root == NULL)
+    {
+        root = new node; //这句不能落，因为此时是NULL，要重新new一个
+        root->data = x;
+        root->lchild = root->rchild = NULL;
+        return;
+    }
+    if (x < root->data)
+        insert(root->lchild, x);
+    else
+        insert(root->rchild, x);
+}
+
+void preorder(node *root, vector<int> &vi) //这里要引用，因为修改了vector的内容，不加只是传了个副本
+{
+    if (root == NULL)
+        return;
+
+    vi.push_back(root->data);
+    preorder(root->lchild, vi);
+    preorder(root->rchild, vi);
+}
+
+//镜像BST的先序只需要颠倒左右子树的访问次序就行了
+void preorderMirror(node *root, vector<int> &vi)
+{
+    if (root == NULL)
+        return;
+
+    vi.push_back(root->data);
+    preorderMirror(root->rchild, vi);
+    preorderMirror(root->lchild, vi);
+}
+
+void postorder(node *root, vector<int> &vi)
+{
+    if (root == NULL)
+        return;
+
+    postorder(root->lchild, vi);
+    postorder(root->rchild, vi);
+    vi.push_back(root->data);
+}
+
+void postorderMirror(node *root, vector<int> &vi)
+{
+    if (root == NULL)
+        return;
+
+    postorderMirror(root->rchild, vi);
+    postorderMirror(root->lchild, vi);
+    vi.push_back(root->data);
+}
+
+vector<int> origin, pre, preM, post, postM;
+
+int main()
+{
+    int n, data;
+    node *root = NULL; //这个必须是NULL不能是new，因为insert比较的是root==NULL，如果不是NULL，第一层就循环不下去了
+    cin >> n;
+    for (int i = 0; i < n; i++) //建立BST
+    {
+        cin >> data;
+        origin.push_back(data);
+        insert(root, data);
+    }
+
+    preorder(root, pre);
+    preorderMirror(root, preM);
+    postorder(root, post);
+    postorderMirror(root, postM);
+
+    if (origin == pre)
+    {
+        cout << "YES" << endl;
+        for (int i = 0; i < post.size(); i++)
+        {
+            cout << post[i];
+            if (i < post.size() - 1)
+                cout << " ";
+        }
+    }
+    else if (origin == preM)
+    {
+        cout << "YES" << endl;
+        for (int i = 0; i < postM.size(); i++)
+        {
+            cout << postM[i];
+            if (i < postM.size() - 1)
+                cout << " ";
+        }
+    }
+    else
+        cout << "NO" << endl;
+}
+~~~
+
+
+
+#### 2_
+
+
+
+
 
