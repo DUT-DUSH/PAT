@@ -1676,7 +1676,7 @@ int main()
 
 ### 二叉查找树
 
-#### BST的基本操作
+#### BST基本操作
 
 ##### 查找
 
@@ -1785,7 +1785,7 @@ void deleteNode(node *&root, int x)
 
 
 
-#### BST的性质
+#### BST性质
 
 > * 中序遍历的结果是有序的
 
@@ -2055,6 +2055,288 @@ int main()
     sort(in, in + n);
     inorder(0); //因为这时候不需要用2n和2n+1判断了，所以可以从0开始
     BFS(0);
+}
+~~~
+
+
+
+### 平衡二叉树
+
+#### AVL定义
+
+~~~C++
+struct node
+{
+    int value, height;
+    node *lchild, *rchild;
+};
+
+//新建结点
+node *newNode(int v)
+{
+    node *Node = new node;
+    Node->value = v;
+    Node->height = 1;
+    Node->lchild = Node->rchild = NULL;
+    return Node;
+}
+
+//获取高度
+int getHeight(node *root)
+{
+    if (root == NULL)
+        return 0;
+    return root->height;
+}
+
+//计算平衡因子
+int getBalanceFactor(node *root)
+{
+    //左子树高度减右子树高度
+    return getHeight(root->lchild) - getHeight(root->rchild);
+}
+
+//更新结点root的height
+void updateHeight(node *root)
+{
+    root->height = max(getHeight(root->lchild), getHeight(root->rchild)) + 1;
+}
+~~~
+
+
+
+#### AVL基本操作
+
+##### 查找
+
+~~~C++
+//同BST
+void search(node *root, int x)
+{
+    if (root == NULL) //空树，查找失败
+    {
+        cout << "search failed" << endl;
+        return;
+    }
+    if (x == root->data) //查找成功
+        cout << root->data << endl;
+    else if (x < root->data)
+        search(root->lchild, x);
+    else
+        search(root->rchild, x);
+}
+~~~
+
+##### 插入
+
+![image-20211203085012960](https://i.loli.net/2021/12/03/KLe5HwizQy6c1Wf.png)
+
+~~~C++
+//左旋
+void L(node *&root)
+{
+    node *temp = root->rchild;
+    root->rchild = temp->lchild;
+    temp->lchild = root;
+    updateHeight(root); //要先更新root，因为此时temp变成根结点，要先知道root的高度
+    updateHeight(temp);
+    temp = root;
+}
+
+//右旋
+void R(node *&root)
+{
+    node *temp = root->lchild;
+    root->lchild = temp->rchild;
+    temp->rchild = root;
+    updateHeight(root); //要先更新root，因为此时temp变成根结点，要先知道root的高度
+    updateHeight(temp);
+    temp = root;
+}
+
+void insert(node *&root, int v)
+{
+    if (root == NULL)
+    {
+        root = newNode(v);
+        return;
+    }
+    if (v < root->value) //往左插入，左子树高度增加
+    {
+        insert(root->lchild, v);
+        updateHeight(root);              //更新树高，这也是递归更新
+        if (getBalanceFactor(root) == 2) //进行旋转
+        {
+            if (getBalanceFactor(root->lchild) == 1) //LL型
+            {
+                R(root); //结点右旋
+            }
+            else if (getBalanceFactor(root->lchild) == -1) //LR型
+            {
+                L(root->lchild); //先平衡因子为-1的结点左旋变成LL型
+                R(root);
+            }
+        }
+    }
+    else //往右插入，右子树高度增加
+    {
+        insert(root->rchild, v);
+        updateHeight(root);
+        if (getBalanceFactor(root) == -2)
+        {
+            if (getBalanceFactor(root->rchild) == -1) //RR型
+            {
+                L(root);
+            }
+            else if (getBalanceFactor(root->rchild) == 1) //RL型
+            {
+                R(root->rchild);
+                L(root);
+            }
+        }
+    }
+}
+~~~
+
+#### AVL建立
+
+~~~C++
+node *creat(int data[], int n)
+{
+    node *root = NULL; //这里必须是NULL，因为insert判断条件是NULL
+    for (int i = 0; i < n; i++)
+        insert(root, data[i]);
+    return root;
+}
+~~~
+
+
+
+#### 1_
+
+![image-20211203100200053](https://i.loli.net/2021/12/03/71LiMjOE6s3WbVP.png)
+
+​	
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+const int maxn = 21;
+int arr[maxn];
+int n;
+
+struct node
+{
+    int value, height;
+    node *lchild, *rchild;
+};
+
+node *newNode(int v)
+{
+    node *root = new node;
+    root->value = v;
+    root->height = 1;
+    root->lchild = root->rchild = NULL;
+    return root;
+}
+
+int getHeight(node *root)
+{
+    if (root == NULL)
+        return 0; //空结点高度为0
+    return root->height;
+}
+
+int getBalanceFactor(node *root)
+{
+    return getHeight(root->lchild) - getHeight(root->rchild);
+}
+
+void updateHeight(node *root)
+{
+    root->height = max(getHeight(root->lchild), getHeight(root->rchild)) + 1;
+}
+
+void L(node *&root) //改变了AVL，所以要加引用
+{
+    node *temp = root->rchild;
+    root->rchild = temp->lchild;
+    temp->lchild = root;
+    updateHeight(root);
+    updateHeight(temp);
+    root = temp; //别忘了这句话，最后根结点要设为temp
+}
+
+void R(node *&root)
+{
+    node *temp = root->lchild;
+    root->lchild = temp->rchild;
+    temp->rchild = root;
+    updateHeight(root);
+    updateHeight(temp);
+    root = temp;
+}
+
+void insert(node *&root, int v)
+{
+    if (root == NULL)
+    {
+        root = newNode(v); //指向空的指针指向新结点
+        return;
+    }
+
+    if (v < root->value)
+    {
+        insert(root->lchild, v);
+        updateHeight(root);
+        if (getBalanceFactor(root) == 2)
+        {
+            if (getBalanceFactor(root->lchild) == 1)
+            {
+                R(root);
+            }
+            else if (getBalanceFactor(root->lchild) == -1)
+            {
+                L(root->lchild);
+                R(root);
+            }
+        }
+    }
+    else
+    {
+        insert(root->rchild, v);
+        updateHeight(root);
+        if (getBalanceFactor(root) == -2)
+        {
+            if (getBalanceFactor(root->rchild) == -1)
+            {
+                L(root);
+            }
+            else if (getBalanceFactor(root->rchild) == 1)
+            {
+                R(root->rchild);
+                L(root);
+            }
+        }
+    }
+}
+
+node *creat(int data[], int n)
+{
+    node *root = NULL;
+    for (int i = 0; i < n; i++)
+        insert(root, data[i]);
+    return root;
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 0; i < n; i++)
+        cin >> arr[i];
+    node *root = creat(arr, n);
+    cout << root->value << endl;
 }
 ~~~
 
