@@ -4,6 +4,480 @@
 
 ### vector
 
+> * 记得push_back()和pop_back()，因为开始的时候vector的长度是0，所以不能v[i]来赋值
+> * 插入、删除和排序里用的都是vi.begin()，vi.end()
+> * 虽然说vector不能处理string->int，但是也不是没办法，只需要写一个转换函数，把string转换成int就行了
+> * 这个vector大小也要提前开出来，不过不能开太大，比规定的大一点就行了   
+> * 这个最后一组超时是因为你用了string， 数据量大的用char[]好一点
+
+
+
+![image-20211205135317226](https://s2.loli.net/2021/12/05/HKA4OhV95xYJW2s.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int getId(string s)
+{
+    int ans = 0;
+    for (int i = 0; i < 3; i++)
+        ans = ans * 26 + s[i] - 'A'; //应该×26
+    ans = ans * 10 + (s[3] - '0');
+    return ans;
+}
+
+int main()
+{
+    vector<int> v[26 * 26 * 26 * 10];
+    int n, k;
+    cin >> n >> k;
+    for (int i = 0; i < k; i++)
+    {
+        int course, name;
+        cin >> course >> name;
+        for (int j = 0; j < name; j++)
+        {
+            string s;
+            cin >> s;
+            v[getId(s)].push_back(course);
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        string s;
+        cin >> s;
+        sort(v[getId(s)].begin(), v[getId(s)].end());
+        cout << s << " " << v[getId(s)].size();
+        for (int j = 0; j < v[getId(s)].size(); j++)
+            cout << " " << v[getId(s)][j];
+        cout << endl;
+    }
+}
+~~~
+
+
+
+### set
+
+> * 这个find很重要，他返回的的是迭代器，于是可以对这个迭代器进行earse的操作
+
+
+
+![image-20211205140522988](https://s2.loli.net/2021/12/05/Qvke2YPhioBwZSr.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <set>
+using namespace std;
+set<int> st[55];
+
+void compare(int x, int y)
+{
+    int totalNum = st[y].size(), sameNum = 0;
+    for (set<int>::iterator it = st[x].begin(); it != st[x].end(); it++) //遍历set的方式
+    {
+        if (st[y].find(*it) != st[y].end()) //在一个set中找另一个set的元素，不需要for循环
+            sameNum++;
+        else
+            totalNum++;
+    }
+    printf("%.1f%\n", sameNum / totalNum);
+}
+
+int main()
+{
+    int n, tmp, value;
+    cin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        cin >> tmp;
+        for (int j = 0; j < tmp; j++)
+        {
+            cin >> value;
+            st[i].insert(value); //set要这么增加值
+        }
+    }
+    int m, k1, k2;
+    cin >> m;
+    for (int i = 0; i < m; i++)
+    {
+        cin >> k1 >> k2;
+        compare(k1 - 1, k2 - 1);
+    }
+}
+~~~
+
+
+
+### string
+
+>* string赋值用**拼接**方式
+>
+>  ![image-20211205142749978](https://s2.loli.net/2021/12/05/g84wrhexuUCkBE5.png)
+
+
+
+![image-20211205143215608](https://s2.loli.net/2021/12/05/KfVh2xgqoA14ydz.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <string>
+using namespace std;
+//科学计数法 按整数部分是否为0来讨论
+//如果是0，本体部分是小数点后前三个非0的数，指数部分是第一个非0数前0个数的相反数
+//如果不是0，本体部分是前三个数，指数部分是小数点前位数
+//题目有陷阱可能是 00123.23；000.012  要先去除前导0 string erase
+
+int n;
+
+string deal(string s, int &e)
+{
+    while (s.length() > 0 && s[0] == '0') //去除前导0
+        s.erase(s.begin());
+    if (s[0] == '.') //如果是小数，去0 求e
+    {
+        s.erase(s.begin());
+        while (s.length() > 0 && s[0] == '0') //一定要有length>0因为有可能小数点后都是0
+        {
+            s.erase(s.begin());
+            e--;
+        }
+    }
+    else //说明小数点前有数字
+    {
+        int k = 0;
+        while (k < s.length() && s[k] != '.') //求 e
+        {
+            k++;
+            e++;
+        }
+        if (k < s.length()) //说明遇到了小数点，要去掉小数点，方便之后取n位本位
+            s.erase(s.begin() + k);
+    }
+
+    if (s.length() == 0)
+        e = 0; //如果去除0长度为0说明这个数是0
+
+    string res;
+    for (int i = 0; i < n; i++)
+    {
+        if (i < s.length()) //string要这么赋值
+            res += s[i];
+        else
+            res += '0';
+    }
+    return res;
+}
+
+int main()
+{
+    string s1, s2, s3, s4;
+    cin >> n >> s1 >> s2;
+    int e1 = 0, e2 = 0;
+    s3 = deal(s1, e1);
+    s4 = deal(s2, e2);
+    if (s3 == s4 && e1 == e2)
+        cout << "YES 0." << s3 << "*10^" << e1 << endl;
+    else
+        cout << "NO 0." << s3 << "*10^" << e1 << " 0." << s4 << "*10^" << e2 << endl;
+}
+~~~
+
+
+
+### map
+
+>* getline前要加getchar()
+>
+>  ![image-20211205145505191](https://s2.loli.net/2021/12/05/LzP29wO4ZyfDN5v.png)
+
+
+
+#### 1_
+
+![image-20211205145148248](https://s2.loli.net/2021/12/05/HPV2zOgwlq9FkyG.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <map>
+using namespace std;
+//这个是string 和int的对应  所以想到map
+string unitDigit[13] = {"tret", "jan", "feb", "mar", "apr", "may", "jun", "jly", "aug", "sep", "oct", "nov", "dec"};
+string tenDigit[13] = {"tret", "tam", "hel", "maa", "huh", "tou", "kes", "hei", "elo", "syy", "lok", "mer", "jou"};
+string numToStr[170];      //打表  这是数字到火星文
+map<string, int> strToNum; //因为这个最高也就170，所以选择打表 火星文到数字
+
+void init()
+{
+    for (int i = 0; i < 13; i++) //对十位为0和个位为0操作
+    {
+        numToStr[i] = unitDigit[i];
+        strToNum[unitDigit[i]] = i;
+        numToStr[i * 13] = tenDigit[i];
+        strToNum[tenDigit[i]] = i * 13;
+    }
+    for (int i = 1; i < 13; i++) //对十位个位都不为0操作，string拼接就行了
+    {
+        for (int j = 1; j < 13; j++)
+        {
+            string str = tenDigit[i] + " " + unitDigit[j];
+            numToStr[i * 13 + j] = str;
+            strToNum[str] = i * 13 + j;
+        }
+    }
+}
+
+int main()
+{
+    init();
+    int n;
+    cin >> n;
+    getchar();
+    while (n--)
+    {
+        string s;
+        //cin >> s;
+        getline(cin, s);    //如果是火星文就会有空格，cin不能接受空格，要用getline
+        if (s[0] >= '0' && s[0] <= '9')
+        {
+            int num = 0;
+            for (int i = 0; i < s.length(); i++)
+                num = num * 10 + (s[i]-'0');  //记住这块的-'0'总是忘，string->int要减0
+            cout<<numToStr[num]<<endl;
+        }
+        else
+            cout<<strToNum[s]<<endl;
+
+    }
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211205145554381](https://s2.loli.net/2021/12/05/amF9nMOIZgrUHQ6.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <map>
+using namespace std;
+//就是求出现次数最多的数字,map是int对应int就是每个都是10的9次方之内,而普通数组开不了这么大
+
+
+//想法是开个数组，记录value以及对应的cnt再比较就行了，但是这样value太大会超时，所以用map
+int main()
+{
+    int n, m;
+    int value;
+    cin >> n >> m;
+    map<int, int> cnt;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            scanf("%d", &value);
+            if (cnt.find(value) != cnt.end())   //直接用find()
+                cnt[value]++;
+            else
+                cnt[value] = 1;
+        }
+    }
+
+    int k=0,max=0;
+    for (map<int, int>::iterator it = cnt.begin(); it != cnt.end(); it++)
+    {
+        if(it->second>max)      //map查看元素的方式
+        {
+            k=it->first;
+            max=it->second;
+        }
+    }
+    cout<<k;
+}
+~~~
+
+
+
+#### 3_
+
+![image-20211205145816288](https://s2.loli.net/2021/12/05/UZYbo91vynED4uR.png)
+
+
+
+~~~c++
+#include <iostream>
+#include <map>
+using namespace std;
+
+bool check(char c) //检查c是否有效
+{
+    if (c >= '0' & c <= '9')
+        return true;
+    if (c >= 'A' & c <= 'Z')
+        return true;
+    if (c >= 'a' & c <= 'z')
+        return true;
+    return false;
+}
+
+int main()
+{
+    map<string, int> cnt;
+    string s;
+    getline(cin, s);
+    for (int i = 0; i < s.length(); i++)    //建立map
+    {
+        string word;
+        while(check(s[i])==true)
+        {
+            if(s[i]>='A'&&s[i]<='Z')
+                s[i]+=32;
+            word+=s[i];
+            i++;
+        }
+        if(word!="")    //string的判空
+        {
+            if(cnt.find(word)!=cnt.end())
+                cnt[word]++;
+            else
+                cnt[word]=1;
+        }
+    }
+
+    string ans;
+    int max=0;
+    for(map<string, int>::iterator it=cnt.begin();it!=cnt.end();it++)
+    {
+        if(it->second>max)
+        {
+            ans=it->first;
+            max=it->second;
+        }
+    }
+    cout<<ans<<" "<<max;
+}
+~~~
+
+
+
+#### 4_
+
+![image-20211205150011844](https://s2.loli.net/2021/12/05/lLk9NbXUAmuYdcJ.png)
+
+![image-20211205150029913](https://s2.loli.net/2021/12/05/tx7oeEgYacyqMzO.png)
+
+![image-20211205150043610](https://s2.loli.net/2021/12/05/5dsUCc2I9OelQkv.png)
+
+
+
+~~~c++
+#include <iostream>
+#include <map>
+#include <set>
+#include<string>
+using namespace std;
+
+map<string, set<int>> mpTitle, mpAuthor, mpKey, mpPub, mpYear;
+
+void query(map<string, set<int>>& mp, string& str)
+{
+    if(mp.find(str)==mp.end())
+        cout<<"Not Found"<<endl;
+    else
+        for (set<int>::iterator it=mp[str].begin();it!=mp[str].end();it++)
+            printf("%07d\n",*it);
+}
+
+
+int main()
+{
+    int n, m, id, type;
+    string title, author, key, pub, year;
+    scanf("%d",&n);
+    for(int i=0;i<n;i++)
+    {
+        scanf("%d",&id);
+        char c=getchar();
+        getline(cin,title);
+        mpTitle[title].insert(id);
+        getline(cin, author);
+        mpAuthor[author].insert(id);
+        while(cin>>key) //接受一系列的关键词，到了换行符就退出
+        {
+            mpKey[key].insert(id);
+            c=getchar();
+            if(c=='\n')
+                break;
+        }
+    
+    getline(cin,pub);
+    mpPub[pub].insert(id);
+    getline(cin, year);
+    mpYear[year].insert(id);
+    }
+
+    string temp;
+    scanf("%d",&m);
+    for(int i=0;i<m;i++)
+    {
+        scanf("%d: ",&type);  //因为这后面不紧挨着换行符所以不用getchar
+        getline(cin, temp);
+        cout<<type<<": "<<temp<<endl;
+        if(type==1)
+            query(mpTitle, temp);
+        else if(type==2)
+            query(mpAuthor, temp);
+        else if (type == 3)
+            query(mpKey, temp);
+        else if (type == 4)
+            query(mpPub, temp);
+        else
+            query(mpYear, temp);
+    }
+}
+~~~
+
+
+
+### 其他常用函数
+
+#### reverse()
+
+> * 记住这是前闭后开的
+
+![image-20211205150508784](https://s2.loli.net/2021/12/05/4YLtKgEfl9uke18.png)
+
+![image-20211205150532270](https://s2.loli.net/2021/12/05/cpOAzGx5l9i84du.png)
+
+
+
+#### lower_bound() 和 upper_bound()
+
+![image-20211205150735005](https://s2.loli.net/2021/12/05/l59rTS2G3XPzM7h.png)
+
+![image-20211205150757047](https://s2.loli.net/2021/12/05/aSnMqvNj58l2ArJ.png)
+
+![image-20211205150816965](https://s2.loli.net/2021/12/05/2v65fiGEyN9kHYT.png)
+
+![image-20211205150826985](https://s2.loli.net/2021/12/05/Y2nFQGTJakctu9m.png)
+
+
+
 
 
 
