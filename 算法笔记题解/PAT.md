@@ -2816,5 +2816,210 @@ int main()
 
 
 
+### 并查集
+
+#### 定义
+
+![image-20211206083453881](https://s2.loli.net/2021/12/06/cpvmFZMPD3wOV5a.png)
+
+
+
+#### 基本操作
+
+~~~C++
+//初始化
+for (int i = 1; i <= n; i++)
+{
+    father[i] = i;
+}
+
+//查找：  返回元素x所在集合的根结点
+int findFather(int x)
+{
+    int a = x;
+    while (x != father[x]) //如果不是根结点
+        x = father[x];     //继续循环
+
+    //此时x存放的就是根结点
+    //对其进行路径压缩
+    //即把所有结点的父节点都设置成根结点，降低之后查找的复杂度
+    while(a != father[a])
+    {
+        int z = a ;
+        a = father[a];    //回溯父亲结点
+        father[z] = x;
+    }
+
+}
+
+//合并
+void union(int a, int b)
+{
+    int faA = findFather(a);
+    int faB = findFather(b);
+
+    if (faA != faB) //如果不属于同一个集合
+        father[faA] = faB;
+}
+~~~
+
+
+
+#### 1_
+
+![image-20211206091750792](https://s2.loli.net/2021/12/06/b42QHVRcaPugD6X.png)
+
+![image-20211206091811873](https://s2.loli.net/2021/12/06/jESKq2wN8daYckf.png)
+
+
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+//就是通过判断根结点，一个集合只有1个根结点
+//findFather寻找元素的根结点，一个集合中不同元素的根结点相同
+
+const int maxn = 110;
+int father[maxn];
+bool isRoot[maxn];
+
+void init(int n)
+{
+    for (int i = 1; i <= n; i++)
+    {
+        father[i] = i;
+        isRoot[i] = false;
+    }
+}
+
+int findFather(int x)
+{
+    while (x != father[x])
+        x = father[x];
+    return x;
+}
+
+void Union(int a, int b)
+{
+    int faA = findFather(a);
+    int faB = findFather(b);
+
+    if (faA != faB)
+        father[faA] = faB;
+}
+
+int main()
+{
+    int n, m, a, b;
+    cin >> n >> m;
+    init(n);
+    for (int i = 0; i < m; i++)
+    {
+        cin >> a >> b;
+        Union(a, b);
+    }
+    for(int i=1;i<=x;i++)
+        isRoot(findFather[i]) = true;
+    int ans = 0;
+    for(int i=1;i<=n;i++)
+        ans+=isRoot[i];
+    cout<<ans;
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211206102300889](https://s2.loli.net/2021/12/06/VtiQGzobqn76CxZ.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+const int maxn = 1010;
+int father[maxn];
+int isRoot[maxn] = {0};
+int course[maxn] = {0};
+
+bool cmp(int a, int b)
+{
+    return a > b;
+}
+
+int findFather(int x)
+{
+    while (x != father[x])
+        x = father[x];
+
+    return x;
+}
+
+void Union(int a, int b)
+{
+    int faA = findFather(a);
+    int faB = findFather(b);
+
+    if (faA != faB)
+        father[faA] = faB;
+}
+
+void init(int n)
+{
+    for (int i = 1; i <= n; i++)
+    {
+        father[i] = i;
+        isRoot[i] = 0;
+    }
+}
+
+int main()
+{
+    int n;
+    cin >> n;
+    init(n);
+    for (int i = 1; i <= n; i++)
+    {
+        int k;
+        scanf("%d:", &k);
+        for (int j = 0; j < k; j++)
+        {
+            int temp;
+            cin >> temp;
+            if (course[temp] == 0) //这步很重要，如果是第一次喜欢就course[temp] = i 否则就和上一个联合
+                course[temp] = i;
+            Union(i, course[temp]);
+        }
+    }
+
+    for (int i = 1; i <= n; i++)
+        isRoot[findFather(i)]++;
+
+    int ans = 0;
+    for (int i = 1; i <= n; i++)
+        if (isRoot[i] != 0)
+            ans++;
+
+    cout << ans << endl;
+
+    sort(isRoot+1, isRoot + n+1, cmp);
+
+    for (int i = 1; i <= ans; i++)
+    {
+        cout << isRoot[i];
+        if (i < ans)
+            cout << " ";
+    }
+}
+~~~
+
+
+
+### 堆
+
 
 
