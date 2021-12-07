@@ -3021,5 +3021,214 @@ int main()
 
 ### 堆
 
+#### 基本操作
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+const int maxn = 100;
+int heap[maxn], n = 10;
+
+//向下调整
+//low为调整结点的数组下标， high为堆最后一个元素的数组下标
+void downAdjust(int low, int high)
+{
+    int i = low, j = i * 2;
+    while (j <= high) //存在孩子节点
+    {
+        //如果有孩子存在，并且值大于左孩子
+        if (j + 1 <= high && heap[j + 1] > heap[j])
+            j = j + 1;
+
+        //孩子中的最大值大于想调整的结点
+        if (heap[j] > heap[i])
+        {
+            swap(heap[j], heap[i]);
+            i=j;
+            j=i*2;
+        }
+        else
+            break;
+    }
+}
+
+//建堆
+void creatHeap()
+{
+    for(int i = n/2;i>=1;i--)
+        downAdjust(i,n);
+}
+
+//删除堆顶元素
+void deleteTop()
+{
+    heap[1] = heap[n--];    //用最后一个元素覆盖堆顶元素，并且让元素个数-1
+    downAdjust(1,n);
+}
+
+
+//添加元素
+//low一般为1，high为新添加结点的数组下标
+void upAdjust(int low, int high)
+{
+    int i=high, j=i/2;
+    while(j>=low)
+    {
+        if(heap[j]<heap[i])
+        {
+            swap(heap[j],heap[i]);
+            i=j;
+            j=i/2;
+        }
+        else
+            break;
+    }
+}
+
+void insert(int x)
+{
+    heap[++n] = x;
+    upAdjust(1,n);
+}
+
+void heapSort()
+{
+    creatHeap();
+    for(int i=n;i>1;i--)
+    {
+        swap(heap[i],heap[1]);
+        downAdjust(1,i-1);
+    }
+}
+~~~
+
+
+
+
+#### 1_
+
+![image-20211207093050837](https://s2.loli.net/2021/12/07/EFHcD9KqQUvb35M.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+const int maxn = 110;
+int origin[maxn], tempOri[maxn], changed[maxn]; //原始数组，原始数组备份，目标数组
+int n;
+
+void showArr(int A[])
+{
+    for (int i = 1; i <= n; i++)
+    {
+        cout << A[i];
+        if (i < n)
+            cout << " ";
+    }
+}
+bool isSame(int A[], int B[])
+{
+    for (int i = 1; i <= n; i++)
+    {
+        if (A[i] != B[i])
+            return false;
+    }
+    return true;
+}
+
+bool insertionSort()
+{
+    int flag = 0;
+    for (int p = 2; p <= n; p++)
+    {
+        if (p != 2 && isSame(tempOri, changed))
+            flag = 1;
+        int tmp = tempOri[p];
+        int i = p - 1;
+        while (i >= 1 && tempOri[i] > tmp)
+        {
+            tempOri[i + 1] = tempOri[i];
+            i--;
+        }
+        tempOri[i + 1] = tmp;
+        if (flag == 1)
+            return 1;
+    }
+    return 0;
+}
+
+void downAdjust(int low, int high)
+{
+    int i = low, j = i * 2;
+    while (j <= high)
+    {
+        if (j + 1 <= high && tempOri[j + 1] > tempOri[j])
+            j = j + 1;
+        if (tempOri[j] > tempOri[i])
+        {
+            swap(tempOri[j], tempOri[i]);
+            i = j;
+            j = i * 2;
+        }
+        else
+            break;
+    }
+}
+
+void creat()
+{
+    for (int i = n / 2; i >= 1; i--)
+        downAdjust(i, n);
+}
+void heapSort(int n)
+{
+    bool flag = false;
+    creat();
+    for (int i = n; i > 1; i--)
+    {
+        if (i != n && isSame(tempOri, changed))
+            flag = true;
+        swap(tempOri[1], tempOri[i]);
+        downAdjust(1, i - 1);   //调整堆顶  这里是i-1，动态变化的
+        if (flag == true)
+        {
+            showArr(tempOri);
+            return;
+        }
+    }
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> origin[i];
+        tempOri[i] = origin[i];
+    }
+    for (int i = 1; i <= n; i++)
+        cin >> changed[i];
+
+    if (insertionSort())
+    {
+        cout << "Insertion Sort" << endl;
+        showArr(tempOri);
+    }
+    else
+    {
+        cout << "Heap Sort" << endl;
+        for (int i = 1; i <= n; i++)
+            tempOri[i] = origin[i];
+        heapSort(n);
+    }
+}
+~~~
+
+
+
 
 
