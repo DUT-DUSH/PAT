@@ -3823,6 +3823,238 @@ int main()
 
 
 
+#### 2_
+
+![image-20220102153443433](https://s2.loli.net/2022/01/02/PU3T9NgzqZrn2mx.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <cstring>
+#include <vector>
+using namespace std;
+
+const int maxn = 1010;
+vector<int> G[maxn];
+bool vis[maxn] = {false};
+
+int currentPoint;
+void DFS(int v) //这里DFS的作用其实就是标记被访问，然后计算出连通图的个数
+{
+	if (v == currentPoint)
+		return;
+
+	vis[v] = true;
+	for (int i = 0; i < G[v].size(); i++)
+	{
+		if (vis[G[v][i]] == false)
+			DFS(G[v][i]);
+	}
+}
+
+int main()
+{
+	int n, m, k;
+	cin >> n >> m >> k;
+	for (int i = 0; i < m; i++)
+	{
+		int a, b;
+		cin >> a >> b;
+		G[a].push_back(b);
+		G[b].push_back(a);
+	}
+
+	for (int i = 0; i < k; i++)
+	{
+		cin >> currentPoint;
+		memset(vis, false, sizeof(vis));
+		int block = 0; //连通块的个数
+		for (int i = 1; i <= n; i++)
+		{
+			if (i != currentPoint && vis[i] == false)
+			{
+				DFS(i);
+				block++;
+			}
+		}
+		cout << block - 1 << endl;
+	}
+}
+~~~
+
+
+
+
+
+### 图的BFS遍历
+
+~~~C++
+#include <iostream>
+#include <queue>
+using namespace std;
+
+const int MAXV = 1000;
+//邻接矩阵
+int n, G[MAXV][MAXV];
+bool inq[MAXV] = {false};
+
+void BFS(int u)
+{
+	queue<int> q;
+	q.push(u);
+	inq[u] = true;
+	while (!q.empty())
+	{
+		int u = q.front(); //去除队首元素
+		q.pop();		   //队首元素出队
+		for (int v = 0; v < n; v++)
+		{
+			if (inq[v] == false && G[u][v] != INF)
+			{
+				q.push(v);
+				inq[v] = true;
+			}
+		}
+	}
+}
+
+void BFSTrave()
+{
+	for (int u = 0; u < n; u++)
+	{
+		if (inq[u] != false)
+			BFS(u);
+	}
+}
+~~~
+
+
+
+~~~C++
+#include <iostream>
+#include <queue>
+using namespace std;
+
+const int MAXV = 1000;
+//邻接表
+vector<int> Adj[MAXV];
+int n;
+bool inq[MAXV] = {false};
+
+void BFS(int u)
+{
+	queue<int> q;
+	q.push(u);
+	inq[u] = true;
+	while(!q.empty())
+	{
+		int u = q.front();
+		q.pop();
+		for(int i=0;i<Adj[u].size();i++)
+		{	
+			int v = Adj[u][i];
+			if(inq[v] == false)
+			{
+				q.push(v);
+				inq[v] = true;
+			}
+		}
+	}
+}
+
+void BFSTrave()
+{
+	for (int u = 0; u < n; u++)
+	{
+		if (inq[u] != false)
+			BFS(u);
+	}
+}
+~~~
+
+
+
+#### 1_
+
+![image-20220102142627734](https://s2.loli.net/2022/01/02/5HleT9GoaY72Bmz.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <cstring>
+#include <vector>
+#include <queue>
+using namespace std;
+
+const int MAXV = 1010;
+
+struct Node
+{
+	int id;
+	int Layer;
+};
+vector<Node> Adj[MAXV];
+bool inq[MAXV] = {false};
+
+int BFS(int s, int L)
+{
+	int numForward = 0; //转发数
+	queue<Node> q;
+	Node start;
+	start.id = s;
+	start.Layer = 0;
+	q.push(start);
+	inq[start.id] = true;
+	while (!q.empty())
+	{
+		Node top = q.front();
+		int u = top.id;
+		q.pop();
+		for (int i = 0; i < Adj[u].size(); i++)
+		{
+			Node next = Adj[u][i];
+			next.Layer = top.Layer + 1;
+			if (inq[next.id] == false && next.Layer <= L)
+			{
+				q.push(next);
+				inq[next.id] = true;
+				numForward++;
+			}
+		}
+	}
+
+	return numForward;
+}
+
+int main()
+{
+	Node user;
+	int n, L, numFollow, idFollow;
+	cin >> n >> L;
+	//建立邻接表
+	for (int i = 1; i <= n; i++)
+	{
+		user.id = i;
+		cin >> numFollow;
+		for (int j = 0; j < numFollow; j++)
+		{
+			cin >> idFollow;
+			Adj[idFollow].push_back(user);
+		}
+	}
+	int numQuery, s;
+	cin >> numQuery;
+	for (int i = 0; i < numQuery; i++)
+	{
+		memset(inq, false, sizeof(inq)); //因为每次循环后queue要初始化的，要不上一次的数据还在
+		cin >> s;
+		int numForward = BFS(s, L);
+		cout << numForward << endl;
+	}
+}
+~~~
 
 
 
@@ -3830,10 +4062,4 @@ int main()
 
 
 
-
-
-
-
-
-# 图的DFS跟普通的DFS有何不同？仔细看下区别
 
