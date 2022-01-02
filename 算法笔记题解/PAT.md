@@ -1,5 +1,437 @@
 # PAT
 
+## 算法初步
+
+> ![image-20220101085841648](https://s2.loli.net/2022/01/01/4zCgaS19hovwVWY.png)
+
+
+### 散列
+
+* x不是用来计数的i，而是输入的变量   h[x]=true  h[x]是分散的（即"散"列），所以是空间换时间
+
+
+
+## 数学问题
+
+### 例_
+
+![image-20211231173534264](https://s2.loli.net/2021/12/31/ejEcDIoN3CqlVys.png)
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+using namespace std;
+int main()
+{
+	string s;
+	cin >> s;
+	s.insert(0, 4 - s.length(), '0'); //用来给不足4位的前面补0
+	do								  //这里必须要用dowhile，因为即使输入的是6174也要执行一遍
+	{
+		string a = s, b = s;
+		sort(a.begin(), a.end()); //对string要用begin和end
+		sort(b.begin(), b.end());
+		int result = stoi(a) - stoi(b); //string to int
+		s = to_string(result);			//int to string
+		s.insert(0, 4 - s.length(), '0');
+		cout << a << " - " << b << " = " << s << endl;
+	} while (s != "6174" && s != "0000");
+	return 0;
+}
+~~~
+
+
+
+>* string转int  以及Int 转string
+>
+>  ![image-20211231175812653](https://s2.loli.net/2021/12/31/BuySfRJwt4r3LhI.png)
+>
+>* sstream
+>
+>  ![ ](https://s2.loli.net/2021/12/31/6m9QxhZ3TednqGO.png)
+
+
+
+### 最大公约数和最小公倍数
+
+​	![image-20211231180154142](https://s2.loli.net/2021/12/31/ozyNfmQY4rtOjHx.png)![image-20211231180205859](https://s2.loli.net/2021/12/31/MwINhkoWpyLATY2.png)
+
+
+
+### 分数四则运算
+
+#### 1_
+
+![image-20211231183255546](https://s2.loli.net/2021/12/31/wZ25HrGoFu9TMSh.png)
+
+
+
+>1. 注意这里面的abs，普通情况化简需要gcd（abs），show对假分数的识别要加abs，以及分子都要加abs
+>
+>2. up和down什么的一定要看仔细
+>
+>3. 判断res==1 一定是双等 一定要仔细
+
+
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+typedef long long int ll;
+
+ll gcd(ll a, ll b)
+{
+    if (b == 0)
+        return a;
+    else
+        return gcd(b, a % b);
+}
+
+struct Fraction
+{
+    ll up, down;
+};
+
+Fraction reduction(Fraction result)
+{
+    if (result.down < 0) //如果分母是负数，让负数在分子上
+    {
+        result.up = -result.up;
+        result.down = -result.down;
+    }
+    if (result.up == 0) //如果分子等于0，让分母等于1
+        result.down = 1;
+    else //除此之外正常化简
+    {
+        int d = gcd(abs(result.up), abs(result.down));
+        result.up /= d;
+        result.down /= d;
+    }
+    return result;
+}
+
+Fraction add(Fraction f1, Fraction f2)
+{
+    Fraction result;
+    result.up = f1.up * f2.down + f2.up * f1.down;
+    result.down = f1.down * f2.down;
+    return reduction(result);
+}
+
+void show(Fraction r)
+{
+    r = reduction(r);
+    if (r.down == 1) //如果分母等于1，输出分子
+        cout << r.up;
+    else if (abs(r.up) > r.down) //假分数
+        cout << r.up / r.down << " " << abs(r.up % r.down) << "/" << r.down << endl;
+    else //真分数
+        cout << r.up << "/" << r.down << endl;
+}
+
+int main()
+{
+    int n;
+    cin >> n;
+    Fraction sum, tmp;
+    sum.up = 0;
+    sum.down = 1;
+    for (int i = 0; i < n; i++)
+    {
+        scanf("%lld/%lld", &tmp.up, &tmp.down);
+        sum = add(sum, tmp);
+    }
+    show(sum);
+}
+~~~
+
+
+
+#### 2_
+
+![image-20211231183845611](https://s2.loli.net/2021/12/31/OFvfLYktHX4Qh3K.png)
+
+
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+typedef long long ll;
+
+int gcd(ll a, ll b)
+{
+    if (b == 0)
+        return a;
+    else
+        return gcd(b, a % b);
+}
+
+struct Fraction
+{
+    ll up, down;
+};
+
+Fraction reduction(Fraction res)
+{
+    if (res.down < 0)
+    {
+        res.up = -res.up;
+        res.down = -res.down;
+    }
+    if (res.up == 0)
+        res.down = 1;
+    else
+    {
+        int d = gcd(abs(res.up), abs(res.down));
+        res.up /= d;
+        res.down /= d;
+    }
+    return res;
+}
+
+void showResult(Fraction res)
+{
+    res = reduction(res);
+    if (res.up < 0)
+        cout << "(";
+    if (res.down == 1)
+        cout << res.up;
+    else if (abs(res.up) > abs(res.down))
+        cout << res.up / res.down << " " << abs(res.up) % abs(res.down) << "/" << res.down;
+    else
+        cout << res.up << "/" << res.down;
+    if (res.up < 0)
+        cout << ")";
+}
+
+Fraction add(Fraction f1, Fraction f2)
+{
+    Fraction res;
+    res.up = f1.up * f2.down + f2.up * f1.down;
+    res.down = f1.down * f2.down;
+    return reduction(res);
+}
+
+Fraction minu(Fraction f1, Fraction f2)
+{
+    Fraction res;
+    res.up = f1.up * f2.down - f2.up * f1.down;
+    res.down = f1.down * f2.down;
+    return reduction(res);
+}
+
+Fraction multi(Fraction f1, Fraction f2)
+{
+    Fraction res;
+    res.up = f1.up * f2.up;
+    res.down = f1.down * f2.down;
+    return reduction(res);
+}
+
+Fraction divide(Fraction f1, Fraction f2)
+{
+    Fraction res;
+    res.up = f1.up * f2.down;
+    res.down = f1.down * f2.up;
+    return reduction(res);
+}
+
+int main()
+{
+    Fraction a, b;
+    scanf("%lld/%lld %lld/%lld", &a.up, &a.down, &b.up, &b.down);
+    showResult(a);
+    cout << " + ";
+    showResult(b);
+    cout << " = ";
+    showResult(add(a, b));
+    cout << endl;
+
+    showResult(a);
+    cout << " - ";
+    showResult(b);
+    cout << " = ";
+    showResult(minu(a, b));
+    cout << endl;
+
+    showResult(a);
+    cout << " * ";
+    showResult(b);
+    cout << " = ";
+    showResult(multi(a, b));
+    cout << endl;
+
+    showResult(a);
+    cout << " / ";
+    showResult(b);
+    cout << " = ";
+    if (b.up == 0)
+        cout << "Inf";
+    else
+        showResult(divide(a, b));
+    cout << endl;
+}
+~~~
+
+
+
+### 素数
+
+![image-20211231184203941](https://s2.loli.net/2021/12/31/Qpn3fvFATMXi9dq.png)
+
+
+
+> 单纯的求素数 用isPrime判断就行了
+>
+> 但如果要求素数表，求N-M范围内的素数，
+>
+> N是指第N个要用findPrime方便
+
+
+
+~~~C++
+#include <iostream>
+using namespace std;
+
+const int maxn = 1000001;
+
+bool p[maxn] = {0};
+int prime[maxn];
+int cnt = 0;
+
+void findPrime(int n)
+{
+    for (int i = 2; i < maxn; i++)
+    {
+        if (p[i] == 0)
+        {
+            prime[cnt++] = i;
+            if (cnt == n)
+                break;
+            for (int j = i + i; j < maxn; j += i)
+                p[j] = 1;
+        }
+    }
+}
+
+int main()
+{
+    int m, n;
+    cin >> m >> n;
+    int count = 0;
+    findPrime(n);
+    for (int i = m; i <= n; i++)
+    {
+        cout << prime[i - 1];
+        count++;
+        if (count % 10 != 0&&i!=n)
+            cout << " ";
+        else
+            cout << endl;
+    }
+}
+~~~
+
+
+
+### 质因子分解
+
+![image-20211231184600158](https://s2.loli.net/2021/12/31/EFvCbsNQG58KpDB.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+const int maxn = 1000001;
+bool p[maxn] = {0};
+int prime[maxn];
+int pNum = 0;
+
+void findPrime()
+{
+    for (int i = 2; i < maxn; i++)
+    {
+        if (p[i] == 0)
+        {
+            prime[pNum++] = i;
+            for (int j = i + i; j < maxn; j += i)
+                p[j] = 1;
+        }
+    }
+}
+
+struct factor
+{
+    int x, cnt;
+} fac[10];
+
+int main()
+{
+    findPrime();
+    int n, num;
+    cin >> n;
+
+    if (n == 1)
+        cout << "1=1";
+    else
+    {
+        cout << n << "=";
+        int sqr = (int)sqrt(1.0 * n); //n要*1.0   因为sqrt参数是浮点数  外面要再次转化为int
+        for (int i = 0; i < pNum && prime[i] <= sqr; i++)
+        {
+            if (n % prime[i] == 0) //如果prime[i]是n的因子，数它有几个
+            {
+                fac[num].x = prime[i];
+                fac[num].cnt = 0;
+                while (n % prime[i] == 0)
+                {
+                    fac[num].cnt++;
+                    n /= prime[i];
+                }
+                num++;
+                
+            }
+            if (n == 1) //如果在n的下降当中到达1了，那么就结束了
+                break;
+        }
+        if (n != 1) //如果n!=1,那么n就是最后一个因子
+        {
+            fac[num].x = n;
+            fac[num++].cnt = 1; //这不能两个都num++，这样就加两次了，一个bug点
+        }
+        for (int i = 0; i < num; i++)
+        {
+            if (i > 0)
+                cout << "*";
+            cout << fac[i].x;
+            if (fac[i].cnt > 1)
+                cout << "^" << fac[i].cnt;
+        }
+    }
+}
+~~~
+
+> ![image-20211231184907168](https://s2.loli.net/2021/12/31/kOLngr71pPI3uJm.png)
+
+
+
+### 大整数运算
+
+![image-20211231185214054](https://s2.loli.net/2021/12/31/dSOJln7cufaFITG.png)
+
+![image-20211231185235572](https://s2.loli.net/2021/12/31/rxCKc4gAXLtzinu.png)
+
+![image-20211231185249612](https://s2.loli.net/2021/12/31/vPmlTGZHudw6RIo.png)
+
+ 
+
 ## STL
 
 ### vector
@@ -3230,5 +3662,178 @@ int main()
 
 
 
+## 图算法专题
 
+### 图的DFS遍历
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+//邻接矩阵
+const int MAXV = 1000;		//最大顶点数
+const int INF = 1000000000; //INF为一大数
+
+int n, G[MAXV][MAXV];
+bool vis[MAXV] = {false}; //如果顶点已被访问，则为true
+
+void DFS(int u, int depth) //当前访问顶点， 深度
+{
+	vis[u] = true;
+	//此处写操作
+	//对所有从u出发能到达的分支顶点进行枚举
+	for (int v = 0; v < n; v++)	//对每个顶点V
+	{
+		if(vis[v]==false&&G[u][v]!=INF)
+			DFS(v,depth+1);
+	}
+}
+
+void DFSTrave()	//遍历图G
+{
+	for(int u=0;u<n;u++)
+		if(vis[u] == false)
+			DFS(u,1);
+}
+~~~
+
+~~~C++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+//邻接表
+const int MAXV = 1000;		//最大顶点数
+const int INF = 1000000000; //INF为一大数
+
+int n;
+vector<int> Adj[MAXV];	//邻接表
+bool vis[MAXV] = {false}; //如果顶点已被访问，则为true
+
+void DFS(int u, int depth)
+{
+	vis[u] = true;
+	for(int i=0;i<Adj[u].size();i++)
+	{
+		int v = Adj[u][i];
+		if(vis[v] == false)
+			DFS(v, depth + 1);
+	}
+}
+
+void DFSTrave()
+{
+	for(int u=0; u<n;u++)
+		if(vis[u] == false)
+			DFS(u,1);
+}
+~~~
+
+#### 1_
+
+![image-20220101193952733](https://s2.loli.net/2022/01/01/ZypciW7YV1q49OM.png)
+
+
+
+~~~C++
+#include <iostream>
+#include <string>
+#include <map>
+
+using namespace std;
+const int maxn = 2010;
+
+map<int, string> intToString;
+map<string, int> stringToInt;
+map<string, int> Gang; //head -> 人数
+
+int G[maxn][maxn] = {0}, weight[maxn] = {0};
+int n, k, numPerson = 0;  //边数， 阈值， 总人数
+bool vis[maxn] = {false}; //标记是否被访问
+
+//访问单个连通块
+void DFS(int nowVisit, int &head, int &numMember, int &totalValue)
+{
+	numMember++;		  //成员人数+1
+	vis[nowVisit] = true; //nowvisit已访问
+	if (weight[nowVisit] > weight[head])
+		head = nowVisit;
+
+	for (int i = 0; i < numPerson; i++) //枚举所有人
+	{
+		if (G[nowVisit][i] > 0) //如果nowVisit能到达i
+		{
+			totalValue += G[nowVisit][i];
+			G[nowVisit][i] = G[i][nowVisit] = 0; //注意这个 防止回头重新计算，是环路的原因
+												 
+			if (vis[i] == false)
+				DFS(i, head, numMember, totalValue);
+		}
+	}
+}
+
+//遍历每个图
+void DFSTrave()
+{
+	for (int i = 0; i < numPerson; i++)
+		if (vis[i] == false)
+		{
+			int head = i, numMember = 0, totalValue = 0;
+			DFS(i, head, numMember, totalValue);
+			if (numMember > 2 && totalValue > k)
+				Gang[intToString[head]] = numMember;
+		}
+}
+
+int change(string s) //int string通过map的相互转化
+{
+	if (stringToInt.find(s) != stringToInt.end())
+		return stringToInt[s];
+	else
+	{
+		stringToInt[s] = numPerson;
+		intToString[numPerson] = s;
+		return numPerson++;
+	}
+}
+
+int main()
+{
+	int w;
+	string str1, str2;
+	cin >> n >> k;
+	for (int i = 0; i < n; i++)
+	{
+		cin >> str1 >> str2 >> w;
+		int id1 = change(str1);
+		int id2 = change(str2);
+		weight[id1] += w;
+		weight[id2] += w;
+		G[id1][id2] += w;
+		G[id2][id1] += w;
+	}
+	DFSTrave();
+	cout << Gang.size() << endl;
+	map<string, int>::iterator it;
+	for (it = Gang.begin(); it != Gang.end(); it++)
+		cout << it->first << " " << it->second << endl;
+}
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 图的DFS跟普通的DFS有何不同？仔细看下区别
 
